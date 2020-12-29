@@ -96,6 +96,8 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	switch v := i.(type) {
 	case int:
 		i = rune(v)
+	case func(p *Parser) (*Cursor, bool):
+		i = AnonymousClass(v)
 	}
 
 	switch mark := p.Mark(); v := i.(type) {
@@ -122,6 +124,26 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			}
 			ok(p.Mark())
 		}
+
+	case Class:
+		last, passed := v.Check(p)
+		if !passed {
+			p.Jump(mark)
+			return nil, &ExpectedParseError{
+				Expected: v, Actual: p.cursor.Rune,
+			}
+		}
+		ok(last)
+	case AnonymousClass:
+		last, passed := v(p)
+		if !passed {
+			p.Jump(mark)
+			return nil, &ExpectedParseError{
+				Expected: v, Actual: p.cursor.Rune,
+			}
+		}
+		ok(last)
+
 	default:
 		return nil, &ExpectError{
 			Message: fmt.Sprintf("value of type %T are not supported", v),
