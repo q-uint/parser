@@ -29,9 +29,9 @@ type ExpectedParseError struct {
 	// The value that was expected.
 	Expected interface{}
 	// The value it actually got.
-	Actual interface{}
+	Actual string
 }
 
 func (e *ExpectedParseError) Error() string {
-	return fmt.Sprintf("parse: expected %T %q but got %v", e.Expected, e.Expected, e.Actual)
+	return fmt.Sprintf("parse: expected %T %q but got %q", e.Expected, e.Expected, e.Actual)
 }

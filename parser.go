@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/di-wu/parser/is"
 	"unicode/utf8"
 )
 
@@ -30,7 +31,7 @@ func New(input []byte) (*Parser, error) {
 
 	p.cursor = &Cursor{
 		Rune:     current,
-		position: size,
+		position: size - 1,
 	}
 	return &p, nil
 }
@@ -41,7 +42,7 @@ func (p *Parser) Next() *Parser {
 		return p
 	}
 
-	current, size := utf8.DecodeRune(p.buffer[p.cursor.position:])
+	current, size := utf8.DecodeRune(p.buffer[p.cursor.position+1:])
 	if size == 0 {
 		// Nothing got decoded.
 		current = EOD
@@ -69,11 +70,24 @@ func (p *Parser) Mark() *Cursor {
 	return &mark
 }
 
+// Peek returns the next cursor without advancing the parser.
+func (p *Parser) Peek() *Cursor {
+	start := p.Mark()
+	defer p.Jump(start)
+	return p.Next().Mark()
+}
+
 // Jump goes to the position of the given mark.
 func (p *Parser) Jump(mark *Cursor) *Parser {
 	cursor := *mark
 	p.cursor = &cursor
 	return p
+}
+
+// Slice returns the value in between the two given cursors [start:end]. The end
+// value is inclusive!
+func (p *Parser) Slice(start *Cursor, end *Cursor) string {
+	return string(p.buffer[start.position : end.position+1])
 }
 
 // Expect checks whether the buffer contains the given value. It consumes their
@@ -84,7 +98,7 @@ func (p *Parser) Jump(mark *Cursor) *Parser {
 // - rune
 // - string
 func (p *Parser) Expect(i interface{}) (*Cursor, error) {
-	var end *Cursor
+	var end *Cursor // Contains a start that indicates the end (inclusive).
 	ok := func(last *Cursor) {
 		end = last
 		// We jump to the given cursor (last parsed rune) because it is not
@@ -100,12 +114,12 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		i = AnonymousClass(v)
 	}
 
-	switch mark := p.Mark(); v := i.(type) {
+	switch start := p.Mark(); v := i.(type) {
 	case rune:
 		if p.cursor.Rune != v {
-			p.Jump(mark)
+			p.Jump(start)
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: p.cursor.Rune,
+				Expected: v, Actual: string(p.cursor.Rune),
 			}
 		}
 		ok(p.Mark())
@@ -117,9 +131,10 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		}
 		for _, r := range []rune(v) {
 			if p.cursor.Rune != r {
-				p.Jump(mark)
+				conflict := p.Mark()
+				p.Jump(start)
 				return nil, &ExpectedParseError{
-					Expected: v, Actual: p.cursor.Rune,
+					Expected: v, Actual: p.Slice(start, conflict),
 				}
 			}
 			ok(p.Mark())
@@ -128,21 +143,44 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	case Class:
 		last, passed := v.Check(p)
 		if !passed {
-			p.Jump(mark)
+			if last == nil {
+				last = start // To prevent nil errors.
+			} else {
+				// Get the mark after the last matching rune.
+				last = p.Peek()
+			}
+
+			p.Jump(start)
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: p.cursor.Rune,
+				Expected: v, Actual: p.Slice(start, last),
 			}
 		}
 		ok(last)
 	case AnonymousClass:
 		last, passed := v(p)
 		if !passed {
-			p.Jump(mark)
+			if last == nil {
+				last = start // To prevent nil errors.
+			} else {
+				// Get the mark after the last matching rune.
+				last = p.Peek()
+			}
+
+			p.Jump(start)
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: p.cursor.Rune,
+				Expected: v, Actual: p.Slice(start, last),
 			}
 		}
 		ok(last)
+
+	case is.Not:
+		last, err := p.Expect(v.Value)
+		p.Jump(start)
+		if err == nil {
+			return nil, &ExpectedParseError{
+				Expected: v, Actual: p.Slice(start, last),
+			}
+		}
 
 	default:
 		return nil, &ExpectError{

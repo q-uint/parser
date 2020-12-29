@@ -1,6 +1,9 @@
 package parser
 
 // AnonymousClass represents an anonymous Class.Check function.
+//
+// The cursor should never be nil except if it fails at the first rune.
+// e.g. "121".Check("123") should return a mark to the 2nd value.
 type AnonymousClass func(p *Parser) (*Cursor, bool)
 
 // CheckRune returns an AnonymousClass that checks whether the current rune of
@@ -29,7 +32,7 @@ func CheckString(s string) AnonymousClass {
 		var last *Cursor
 		for _, r := range []rune(s) {
 			if p.Current() != r {
-				return nil, false
+				return last, false
 			}
 			last = p.Mark()
 			p.Next()
