@@ -12,3 +12,26 @@ type InitError struct {
 func (e *InitError) Error() string {
 	return fmt.Sprintf("parser: %s", e.Message)
 }
+
+// ExpectError is an error that occurs on when an invalid/unsupported value is
+// passed to the Parser.Expect function.
+type ExpectError struct {
+	Message string
+}
+
+func (e *ExpectError) Error() string {
+	return fmt.Sprintf("expect: %s", e.Message)
+}
+
+// ExpectedParseError indicates that the parser Expected a different value than
+// the Actual value present in the buffer.
+type ExpectedParseError struct {
+	// The value that was expected.
+	Expected interface{}
+	// The value it actually got.
+	Actual interface{}
+}
+
+func (e *ExpectedParseError) Error() string {
+	return fmt.Sprintf("parse: expected %T %q but got %v", e.Expected, e.Expected, e.Actual)
+}
