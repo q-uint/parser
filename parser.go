@@ -110,8 +110,11 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	switch v := i.(type) {
 	case int:
 		i = rune(v)
+
 	case func(p *Parser) (*Cursor, bool):
 		i = AnonymousClass(v)
+	case Class:
+		i = AnonymousClass(v.Check)
 	}
 
 	switch start := p.Mark(); v := i.(type) {
@@ -140,22 +143,6 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			ok(p.Mark())
 		}
 
-	case Class:
-		last, passed := v.Check(p)
-		if !passed {
-			if last == nil {
-				last = start // To prevent nil errors.
-			} else {
-				// Get the mark after the last matching rune.
-				last = p.Peek()
-			}
-
-			p.Jump(start)
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, last),
-			}
-		}
-		ok(last)
 	case AnonymousClass:
 		last, passed := v(p)
 		if !passed {

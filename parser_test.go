@@ -165,6 +165,11 @@ func (t testClass) Check(p *parser.Parser) (*parser.Cursor, bool) {
 	return p.Mark(), 'a' <= r && r <= 'z'
 }
 
+func testAnonymousClass (p *parser.Parser) (*parser.Cursor, bool) {
+	r := p.Current()
+	return p.Mark(), 'a' <= r && r <= 'z'
+}
+
 func TestParser_Expect_class(t *testing.T) {
 	p, _ := parser.New([]byte("some data"))
 	mark, err := p.Expect(testClass{})
@@ -173,6 +178,15 @@ func TestParser_Expect_class(t *testing.T) {
 		return
 	}
 	if mark.Rune != 's' {
+		t.Error()
+	}
+
+	mark, err = p.Expect(testAnonymousClass)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if mark.Rune != 'o' {
 		t.Error()
 	}
 }
