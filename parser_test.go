@@ -3,7 +3,6 @@ package parser_test
 import (
 	"fmt"
 	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/is"
 	"testing"
 )
 
@@ -165,7 +164,7 @@ func (t testClass) Check(p *parser.Parser) (*parser.Cursor, bool) {
 	return p.Mark(), 'a' <= r && r <= 'z'
 }
 
-func testAnonymousClass (p *parser.Parser) (*parser.Cursor, bool) {
+func testAnonymousClass(p *parser.Parser) (*parser.Cursor, bool) {
 	r := p.Current()
 	return p.Mark(), 'a' <= r && r <= 'z'
 }
@@ -213,17 +212,4 @@ func TestParser_Expect_class_err(t *testing.T) {
 	if expected.Actual != "bar" {
 		t.Error(expected.Actual)
 	}
-}
-
-func ExampleParser_Expect_not() {
-	p, _ := parser.New([]byte("bar"))
-
-	_, err := p.Expect(is.Not{Value: "baz"})
-	fmt.Println(err)
-	_, err = p.Expect(is.Not{Value: "bar"})
-	fmt.Println(err)
-
-	// Output:
-	// <nil>
-	// parse: expected is.Not {"bar"} but got "bar"
 }

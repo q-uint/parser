@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"github.com/di-wu/parser/is"
+	"github.com/di-wu/parser/op"
 	"unicode/utf8"
 )
 
@@ -95,8 +95,12 @@ func (p *Parser) Slice(start *Cursor, end *Cursor) string {
 // value. It returns an error if can not find a match with the given value.
 //
 // It currently supports:
-// - rune
-// - string
+//	- rune & string
+//	- func(p *Parser) (*Cursor, bool)
+//	  (== AnonymousClass)
+//	- []interface{}
+//	  (== op.And)
+//	- operators: op.Not, op.And, op.Or & op.XOr
 func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	var end *Cursor // Contains a start that indicates the end (inclusive).
 	ok := func(last *Cursor) {
@@ -104,6 +108,16 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		// We jump to the given cursor (last parsed rune) because it is not
 		// guaranteed that the already parser did not pass it.
 		p.Jump(last).Next()
+	}
+	fail := func(start, last *Cursor, next bool) string {
+		if last == nil {
+			last = start // To prevent nil errors.
+		} else if next {
+			// Get the mark after the last matching rune.
+			last = p.Jump(last).Peek()
+		}
+		p.Jump(start) // Reset parser.
+		return p.Slice(start, last)
 	}
 
 	// Converting some values for convenience...
@@ -115,6 +129,8 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		i = AnonymousClass(v)
 	case Class:
 		i = AnonymousClass(v.Check)
+	case []interface{}:
+		i = op.And(v)
 	}
 
 	switch start := p.Mark(); v := i.(type) {
@@ -146,21 +162,13 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	case AnonymousClass:
 		last, passed := v(p)
 		if !passed {
-			if last == nil {
-				last = start // To prevent nil errors.
-			} else {
-				// Get the mark after the last matching rune.
-				last = p.Peek()
-			}
-
-			p.Jump(start)
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, last),
+				Expected: v, Actual: fail(start, last, true),
 			}
 		}
 		ok(last)
 
-	case is.Not:
+	case op.Not:
 		last, err := p.Expect(v.Value)
 		p.Jump(start)
 		if err == nil {
@@ -168,7 +176,53 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 				Expected: v, Actual: p.Slice(start, last),
 			}
 		}
-
+	case op.And:
+		var last *Cursor
+		for _, i := range v {
+			mark, err := p.Expect(i)
+			if err != nil {
+				return nil, &ExpectedParseError{
+					Expected: v, Actual: fail(start, last, true),
+				}
+			}
+			last = mark
+		}
+		ok(last)
+	case op.Or:
+		var last *Cursor
+		for _, i := range v {
+			mark, err := p.Expect(i)
+			if err == nil {
+				last = mark
+				break
+			}
+		}
+		if last == nil {
+			return nil, &ExpectedParseError{
+				Expected: v, Actual: fail(start, last, true),
+			}
+		}
+		ok(last)
+	case op.XOr:
+		var last *Cursor
+		for _, i := range v {
+			mark, err := p.Expect(i)
+			if err == nil {
+				if last != nil {
+					return nil, &ExpectedParseError{
+						Expected: v, Actual: fail(start, mark, false),
+					}
+				}
+				last = mark
+				p.Jump(start) // Go back to the start.
+			}
+		}
+		if last == nil {
+			return nil, &ExpectedParseError{
+				Expected: v, Actual: fail(start, last, true),
+			}
+		}
+		ok(last)
 	default:
 		return nil, &ExpectError{
 			Message: fmt.Sprintf("value of type %T are not supported", v),
