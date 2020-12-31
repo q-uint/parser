@@ -1,8 +1,8 @@
-# CALC (v0.1.0) github.com/di-wu/parser/examples/calculator
+# CALC (v0.1.1) github.com/di-wu/parser/examples/calculator
 
-AddSubExpr <-- MulDiv (AddSub MulDiv)*
+AddSubExpr <-- MulDivExpr (AddSub MulDivExpr)*
 MulDivExpr <-- Factor (MulDiv Factor)*
-Factor      <- Integer / LPAREN AddSub RPAREN
+Factor      <- Integer / LPAREN AddSubExpr RPAREN
 AddSub     <-- ADD / SUB
 MulDiv     <-- MUL / DIV
 Integer    <-- [0-9]+
@@ -13,4 +13,3 @@ MUL    <- x2A # *
 DIV    <- x2F # /
 LPAREN <- x28 # (
 RPAREN <- x29 # )
-
