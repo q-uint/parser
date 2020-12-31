@@ -134,6 +134,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		i = AnonymousClass(v)
 	case Class:
 		i = AnonymousClass(v.Check)
+
 	case []interface{}:
 		i = op.And(v)
 	}
