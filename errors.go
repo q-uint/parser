@@ -33,5 +33,5 @@ type ExpectedParseError struct {
 }
 
 func (e *ExpectedParseError) Error() string {
-	return fmt.Sprintf("parse: expected %T %q but got %q", e.Expected, e.Expected, e.Actual)
+	return fmt.Sprintf("parse: expected %T %v but got %q", e.Expected, e.Expected, e.Actual)
 }

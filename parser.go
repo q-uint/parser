@@ -104,6 +104,11 @@ func (p *Parser) Slice(start *Cursor, end *Cursor) string {
 func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	var end *Cursor // Contains a start that indicates the end (inclusive).
 	ok := func(last *Cursor) {
+		if last == nil {
+			// Optional values have no last mark.
+			return
+		}
+
 		end = last
 		// We jump to the given cursor (last parsed rune) because it is not
 		// guaranteed that the already parser did not pass it.
@@ -218,6 +223,32 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			}
 		}
 		if last == nil {
+			return nil, &ExpectedParseError{
+				Expected: v, Actual: fail(start, last, true),
+			}
+		}
+		ok(last)
+
+	case op.Range:
+		var (
+			count int
+			last  *Cursor
+		)
+		for {
+			mark, err := p.Expect(v.Value)
+			if err != nil {
+				break
+			}
+			last = mark
+			count++
+
+			if v.Max != -1 && count == v.Max {
+				// Break if you have parsed the maximum amount of values.
+				// This way count will never be larger than v.Max.
+				break
+			}
+		}
+		if count < v.Min {
 			return nil, &ExpectedParseError{
 				Expected: v, Actual: fail(start, last, true),
 			}

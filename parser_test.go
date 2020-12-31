@@ -82,7 +82,7 @@ func ExampleParser_Expect_rune() {
 
 	// Output:
 	// U+0064: d
-	// parse: expected int32 'd' but got "a"
+	// parse: expected int32 100 but got "a"
 	// U+0061: a
 	// U+0074: t
 	// U+0061: a

@@ -15,7 +15,7 @@ func ExampleNot() {
 	fmt.Println(err)
 
 	// Output:
-	// parse: expected op.Not {"bar"} but got "bar"
+	// parse: expected op.Not {bar} but got "bar"
 	// <nil>
 }
 
@@ -28,13 +28,12 @@ func ExampleAnd() {
 	fmt.Println(err)
 
 	// Output:
-	// parse: expected op.And ["foo" ' ' "bar" '_'] but got "foo bar "
+	// parse: expected op.And [foo 32 bar 95] but got "foo bar "
 	// <nil>
 }
 
 func ExampleOr() {
 	p, _ := parser.New([]byte("data"))
-
 
 	mark, _ := p.Expect(op.Or{'d', "da", "data"})
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
@@ -46,7 +45,7 @@ func ExampleOr() {
 	// Output:
 	// U+0064: d
 	// U+0074: t
-	// parse: expected op.Or ['d' 't' {'a'}] but got "a"
+	// parse: expected op.Or [100 116 {97}] but got "a"
 }
 
 func ExampleXOr() {
@@ -58,6 +57,6 @@ func ExampleXOr() {
 	fmt.Println(err)
 
 	// Output:
-	// parse: expected op.XOr ['d' "da" "data"] but got "da"
-	// parse: expected op.XOr ['a' 't'] but got "d"
+	// parse: expected op.XOr [100 da data] but got "da"
+	// parse: expected op.XOr [97 116] but got "d"
 }
