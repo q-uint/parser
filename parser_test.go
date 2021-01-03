@@ -16,6 +16,18 @@ func ExampleParser_Current() {
 	// U+0073: s
 }
 
+func ExampleParser_look_back_and_peek() {
+	p, _ := parser.New([]byte("①23"))
+	p.Next() // Point at '2'.
+
+	fmt.Println(p.LookBack())
+	fmt.Println(p.Peek())
+
+	// Output:
+	// U+2460 ①
+	// U+0033 3
+}
+
 func ExampleParser_Next() {
 	p, _ := parser.New([]byte("some data"))
 

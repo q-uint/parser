@@ -35,3 +35,12 @@ type ExpectedParseError struct {
 func (e *ExpectedParseError) Error() string {
 	return fmt.Sprintf("parse: expected %T %v but got %q", e.Expected, e.Expected, e.Actual)
 }
+
+// UnsupportedType indicates the type of the value is unsupported.
+type UnsupportedType struct {
+	Value interface{}
+}
+
+func (e *UnsupportedType) Error() string {
+	return fmt.Sprintf("parse: value of type %T are not supported", e.Value)
+}

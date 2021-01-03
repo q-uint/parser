@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"github.com/di-wu/parser/op"
 	"unicode/utf8"
 )
@@ -13,6 +12,9 @@ const EOD = 1<<31 - 1
 type Parser struct {
 	buffer []byte
 	cursor *Cursor
+
+	converter func(i interface{}) interface{}
+	operator  func(i interface{}) (*Cursor, error)
 }
 
 // New creates a new Parser.
@@ -34,6 +36,18 @@ func New(input []byte) (*Parser, error) {
 		position: size - 1,
 	}
 	return &p, nil
+}
+
+// SetConverter allows you to add additional (prioritized) converters to the
+// parser. e.g. convert aliases to other types or overwrite defaults.
+func (p *Parser) SetConverter(c func(i interface{}) interface{}) {
+	p.converter = c
+}
+
+// SetOperator allows you to support additional (prioritized) operators.
+// Should return an UnsupportedType error if the given value is not supported.
+func (p *Parser) SetOperator(o func(i interface{}) (*Cursor, error)) {
+	p.operator = o
 }
 
 // Next advances the parser by one rune.
@@ -70,6 +84,24 @@ func (p *Parser) Mark() *Cursor {
 	return &mark
 }
 
+// LookBack returns the previous cursor without decreasing the parser.
+func (p *Parser) LookBack() *Cursor {
+	if p.cursor.position == 0 || p.Done() {
+		// Not possible to go back
+		return p.Mark()
+	}
+
+	// We don't know the size of the previous rune... 1 or more?
+	previous, size := utf8.DecodeRune(p.buffer[p.cursor.position-1:])
+	for i := 2; previous == utf8.RuneError; i++ {
+		previous, size = utf8.DecodeRune(p.buffer[p.cursor.position-i:])
+	}
+	return &Cursor{
+		Rune:     previous,
+		position: p.cursor.position - size,
+	}
+}
+
 // Peek returns the next cursor without advancing the parser.
 func (p *Parser) Peek() *Cursor {
 	start := p.Mark()
@@ -102,43 +134,22 @@ func (p *Parser) Slice(start *Cursor, end *Cursor) string {
 //	  (== op.And)
 //	- operators: op.Not, op.And, op.Or & op.XOr
 func (p *Parser) Expect(i interface{}) (*Cursor, error) {
-	var end *Cursor // Contains a start that indicates the end (inclusive).
-	ok := func(last *Cursor) {
-		if last == nil {
-			// Optional values have no last mark.
-			return
+	state := state{p: p}
+
+	i = ConvertAliases(i)
+	if p.converter != nil {
+		// Can undo previous conversions!
+		i = p.converter(i)
+	}
+
+	if p.operator != nil {
+		// Takes priority over default values. If an unsupported error is
+		// returned we can check if one of the predefined types match.
+		mark, err := p.operator(i)
+		if _, ok := err.(*UnsupportedType); !ok {
+			return mark, err
 		}
-
-		end = last
-		// We jump to the given cursor (last parsed rune) because it is not
-		// guaranteed that the already parser did not pass it.
-		p.Jump(last).Next()
 	}
-	fail := func(start, last *Cursor, next bool) string {
-		if last == nil {
-			last = start // To prevent nil errors.
-		} else if next {
-			// Get the mark after the last matching rune.
-			last = p.Jump(last).Peek()
-		}
-		p.Jump(start) // Reset parser.
-		return p.Slice(start, last)
-	}
-
-	// Converting some values for convenience...
-	switch v := i.(type) {
-	case int:
-		i = rune(v)
-
-	case func(p *Parser) (*Cursor, bool):
-		i = AnonymousClass(v)
-	case Class:
-		i = AnonymousClass(v.Check)
-
-	case []interface{}:
-		i = op.And(v)
-	}
-
 	switch start := p.Mark(); v := i.(type) {
 	case rune:
 		if p.cursor.Rune != v {
@@ -147,7 +158,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 				Expected: v, Actual: string(p.cursor.Rune),
 			}
 		}
-		ok(p.Mark())
+		state.Ok(p.Mark())
 	case string:
 		if v == "" {
 			return nil, &ExpectError{
@@ -162,17 +173,17 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 					Expected: v, Actual: p.Slice(start, conflict),
 				}
 			}
-			ok(p.Mark())
+			state.Ok(p.Mark())
 		}
 
 	case AnonymousClass:
 		last, passed := v(p)
 		if !passed {
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: fail(start, last, true),
+				Expected: v, Actual: state.Fail(start, last, true),
 			}
 		}
-		ok(last)
+		state.Ok(last)
 
 	case op.Not:
 		last, err := p.Expect(v.Value)
@@ -188,12 +199,12 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			mark, err := p.Expect(i)
 			if err != nil {
 				return nil, &ExpectedParseError{
-					Expected: v, Actual: fail(start, last, true),
+					Expected: v, Actual: state.Fail(start, last, true),
 				}
 			}
 			last = mark
 		}
-		ok(last)
+		state.Ok(last)
 	case op.Or:
 		var last *Cursor
 		for _, i := range v {
@@ -205,10 +216,10 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		}
 		if last == nil {
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: fail(start, last, true),
+				Expected: v, Actual: state.Fail(start, last, true),
 			}
 		}
-		ok(last)
+		state.Ok(last)
 	case op.XOr:
 		var last *Cursor
 		for _, i := range v {
@@ -216,7 +227,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			if err == nil {
 				if last != nil {
 					return nil, &ExpectedParseError{
-						Expected: v, Actual: fail(start, mark, false),
+						Expected: v, Actual: state.Fail(start, mark, false),
 					}
 				}
 				last = mark
@@ -225,10 +236,10 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		}
 		if last == nil {
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: fail(start, last, true),
+				Expected: v, Actual: state.Fail(start, last, true),
 			}
 		}
-		ok(last)
+		state.Ok(last)
 
 	case op.Range:
 		var (
@@ -251,14 +262,35 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		}
 		if count < v.Min {
 			return nil, &ExpectedParseError{
-				Expected: v, Actual: fail(start, last, true),
+				Expected: v, Actual: state.Fail(start, last, true),
 			}
 		}
-		ok(last)
+		state.Ok(last)
+
 	default:
-		return nil, &ExpectError{
-			Message: fmt.Sprintf("value of type %T are not supported", v),
+		return nil, &UnsupportedType{
+			Value: i,
 		}
 	}
-	return end, nil
+	return state.End(), nil
+}
+
+// ConvertAliases converts various default primitive types to aliases for type
+// matching.
+func ConvertAliases(i interface{}) interface{} {
+	switch v := i.(type) {
+	case int:
+		return rune(v)
+
+	case func(p *Parser) (*Cursor, bool):
+		return AnonymousClass(v)
+	case Class:
+		return AnonymousClass(v.Check)
+
+	case []interface{}:
+		return op.And(v)
+
+	default:
+		return i
+	}
 }
