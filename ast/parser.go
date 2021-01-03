@@ -2,6 +2,7 @@ package ast
 
 import (
 	"github.com/di-wu/parser"
+	"github.com/di-wu/parser/op"
 )
 
 // Parser represents a general purpose AST parser.
@@ -48,8 +49,102 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			Type:  v.Type,
 			Value: p.Slice(start, p.LookBack()),
 		}, nil
+
+	case op.Not:
+		defer p.Jump(start)
+		if _, err := ap.Expect(v.Value); err == nil {
+			return nil, &parser.ExpectedParseError{
+				Expected: v, Actual: p.Slice(start, p.LookBack()),
+			}
+		}
+	case op.And:
+		node := &Node{}
+		for _, i := range v {
+			n, err := ap.Expect(i)
+			if err != nil {
+				p.Jump(start)
+				return nil, err
+			}
+			if n != nil {
+				node.SetLast(n)
+			}
+		}
+		return node, nil
+	case op.Or:
+		for _, i := range v {
+			node, err := ap.Expect(i)
+			if node != nil && err == nil {
+				return node, err
+			}
+			p.Jump(start)
+		}
+		return nil, &parser.ExpectedParseError{
+			Expected: v, Actual: p.Slice(start, p.Mark()),
+		}
+	case op.XOr:
+		var (
+			last *parser.Cursor
+			node *Node
+		)
+		for _, i := range v {
+			n, err := ap.Expect(i)
+			if n != nil && err == nil {
+				if node != nil {
+					p.Jump(start)
+					return nil, &parser.ExpectedParseError{
+						Expected: v, Actual: p.Slice(start, last),
+					}
+				}
+				node = n
+			}
+			last = p.Mark()
+			p.Jump(start)
+		}
+		if node == nil {
+			return nil, &parser.ExpectedParseError{
+				Expected: v, Actual: p.Slice(start, p.Mark()),
+			}
+		}
+		return node, nil
+
+	case op.Range:
+		var (
+			count int
+			last  *parser.Cursor
+			node  = &Node{}
+		)
+		for {
+			n, err := ap.Expect(v.Value)
+			if err != nil {
+				break
+			}
+			if n != nil {
+				node.SetLast(n)
+			}
+			last = p.LookBack()
+			count++
+
+			if v.Max != -1 && count == v.Max {
+				// Break if you have parsed the maximum amount of values.
+				// This way count will never be larger than v.Max.
+				break
+			}
+		}
+		if count < v.Min {
+			return nil, &parser.ExpectedParseError{
+				Expected: v, Actual: p.Slice(start, last),
+			}
+		}
+
+		if node.IsParent() {
+			// Only return node if it has children.
+			return node, nil
+		}
+
 	default:
-		_ = start
+		return nil, &parser.UnsupportedType{
+			Value: i,
+		}
 	}
 
 	return nil, nil

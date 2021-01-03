@@ -186,9 +186,8 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		state.Ok(last)
 
 	case op.Not:
-		last, err := p.Expect(v.Value)
-		p.Jump(start)
-		if err == nil {
+		defer p.Jump(start)
+		if last, err := p.Expect(v.Value); err == nil {
 			return nil, &ExpectedParseError{
 				Expected: v, Actual: p.Slice(start, last),
 			}

@@ -37,7 +37,7 @@ func ExampleOr() {
 
 	mark, _ := p.Expect(op.Or{'d', "da", "data"})
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
-	mark, _ = p.Expect(op.Or{ "at", 'a', "ata"})
+	mark, _ = p.Expect(op.Or{"at", 'a', "ata"})
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
 	_, err := p.Expect(op.Or{'d', 't', op.Not{'a'}})
 	fmt.Println(err)
