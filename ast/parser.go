@@ -29,14 +29,31 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 	p := ap.internal
 	switch start := p.Mark(); v := i.(type) {
 	case rune, string, parser.AnonymousClass:
+		// Just check if it matches.
 		if _, err := p.Expect(v); err != nil {
 			return nil, err
 		}
 
+	case ParseNode:
+		node, err := v(ap)
+		if err != nil {
+			p.Jump(start)
+			return nil, err
+		}
+		return node, nil
+
 	case Capture:
 		node, err := ap.Expect(v.Value)
-		if node != nil || err != nil {
-			return node, err
+		if err != nil {
+			p.Jump(start)
+			return nil, err
+		}
+		if node != nil {
+			// Return the node.
+			if node.Type == -1 {
+				node.Type = v.Type
+			}
+			return node, nil
 		}
 
 		if v.Convert != nil {
@@ -53,12 +70,13 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 	case op.Not:
 		defer p.Jump(start)
 		if _, err := ap.Expect(v.Value); err == nil {
+			// Return error if match is found.
 			return nil, &parser.ExpectedParseError{
 				Expected: v, Actual: p.Slice(start, p.LookBack()),
 			}
 		}
 	case op.And:
-		node := &Node{}
+		node := &Node{Type: -1}
 		for _, i := range v {
 			n, err := ap.Expect(i)
 			if err != nil {
@@ -66,52 +84,70 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 				return nil, err
 			}
 			if n != nil {
-				node.SetLast(n)
+				if n.Type == -1 {
+					node.Adopt(n)
+				} else {
+					node.SetLast(n)
+				}
 			}
 		}
 		return node, nil
 	case op.Or:
+		// To keep track whether we encountered a valid value, node or not.
+		var hit bool
 		for _, i := range v {
 			node, err := ap.Expect(i)
-			if node != nil && err == nil {
-				return node, err
-			}
-			p.Jump(start)
-		}
-		return nil, &parser.ExpectedParseError{
-			Expected: v, Actual: p.Slice(start, p.Mark()),
-		}
-	case op.XOr:
-		var (
-			last *parser.Cursor
-			node *Node
-		)
-		for _, i := range v {
-			n, err := ap.Expect(i)
-			if n != nil && err == nil {
+			if err == nil {
+				hit = true
 				if node != nil {
-					p.Jump(start)
-					return nil, &parser.ExpectedParseError{
-						Expected: v, Actual: p.Slice(start, last),
-					}
+					// Return node if found.
+					return node, nil
 				}
-				node = n
+				break
 			}
-			last = p.Mark()
 			p.Jump(start)
 		}
-		if node == nil {
+		if !hit {
 			return nil, &parser.ExpectedParseError{
 				Expected: v, Actual: p.Slice(start, p.Mark()),
 			}
 		}
-		return node, nil
+	case op.XOr:
+		var (
+			node *Node
+			last *parser.Cursor
+		)
+		for _, i := range v {
+			n, err := ap.Expect(i)
+			if err != nil {
+				p.Jump(start)
+				continue
+			}
+			if last != nil {
+				// We already got a match.
+				p.Jump(start)
+				return nil, &parser.ExpectedParseError{
+					Expected: v, Actual: p.Slice(start, last),
+				}
+			}
+			last = p.Mark()
+			node = n
+		}
+		if last == nil {
+			p.Jump(start)
+			return nil, &parser.ExpectedParseError{
+				Expected: v, Actual: p.Slice(start, p.Mark()),
+			}
+		}
+		if node != nil {
+			return node, nil
+		}
 
 	case op.Range:
 		var (
 			count int
 			last  *parser.Cursor
-			node  = &Node{}
+			node  = &Node{Type: -1}
 		)
 		for {
 			n, err := ap.Expect(v.Value)
@@ -119,7 +155,11 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 				break
 			}
 			if n != nil {
-				node.SetLast(n)
+				if n.Type == -1 {
+					node.Adopt(n)
+				} else {
+					node.SetLast(n)
+				}
 			}
 			last = p.LookBack()
 			count++
@@ -131,6 +171,7 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			}
 		}
 		if count < v.Min {
+			p.Jump(start)
 			return nil, &parser.ExpectedParseError{
 				Expected: v, Actual: p.Slice(start, last),
 			}

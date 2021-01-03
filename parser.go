@@ -119,6 +119,9 @@ func (p *Parser) Jump(mark *Cursor) *Parser {
 // Slice returns the value in between the two given cursors [start:end]. The end
 // value is inclusive!
 func (p *Parser) Slice(start *Cursor, end *Cursor) string {
+	if end == nil { // Just to be sure...
+		end = start
+	}
 	return string(p.buffer[start.position : end.position+1])
 }
 

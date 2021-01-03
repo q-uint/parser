@@ -48,9 +48,9 @@ func (n *Node) String() string {
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			children = append(children, c.String())
 		}
-		return fmt.Sprintf("[%03d]: [%v]", n.Type, strings.Join(children, ", "))
+		return fmt.Sprintf("[%03d] [%v]", n.Type, strings.Join(children, ", "))
 	}
-	return fmt.Sprintf("[%03d]: %v", n.Type, n.Value)
+	return fmt.Sprintf("[%03d] %v", n.Type, n.Value)
 }
 
 // IsParent returns whether the node has children and thus is not a value node.
@@ -59,30 +59,67 @@ func (n *Node) IsParent() bool {
 }
 
 // Children returns all the children of the node.
-func (n *Node) Children() (cs []*Node) {
+func (n *Node) Children() []*Node {
 	if n.FirstChild == nil {
-		return //  Node has no children.
+		return nil //  Node has no children.
 	}
-	cs = append(cs, n.FirstChild)
-	for c := n.FirstChild; c != nil; cs = append(cs, c) {
-		c = c.NextSibling
+	var cs []*Node
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		cs = append(cs, c)
 	}
-	return
+	return cs
+}
+
+// Remove removes itself from the tree.
+func (n *Node) Remove() *Node {
+	if n.Parent != nil {
+		// Set the first child to the next.
+		if n.Parent.FirstChild == n {
+			n.Parent.FirstChild = n.NextSibling
+		}
+		// Set the last child to the previous.
+		if n.Parent.LastChild == n {
+			n.Parent.LastChild = n.PreviousSibling
+		}
+		n.Parent = nil
+	}
+
+	if n.PreviousSibling != nil {
+		// Set the next sibling of the previous sibling to the next.
+		n.PreviousSibling.NextSibling = n.NextSibling
+	}
+	if n.NextSibling != nil {
+		// Set the previous sibling of the next sibling to the previous.
+		n.NextSibling.PreviousSibling = n.PreviousSibling
+	}
+	n.NextSibling = nil
+	n.PreviousSibling = nil
+	return n
+}
+
+func (n *Node) Adopt(other *Node) {
+	if other.FirstChild == nil {
+		// Nothing to adapt.
+		return
+	}
+	n.SetLast(other.FirstChild.Remove())
+	n.Adopt(other)
 }
 
 // SetPrevious inserts the given node as the previous sibling.
 func (n *Node) SetPrevious(sibling *Node) {
+	sibling.Remove()
 	sibling.Parent = n.Parent
 	if n.PreviousSibling != nil {
 		// Already has a sibling.
-		// 1. Copy over previous of node.
-		// 2. Add node as next.
-		// 3. Update next of previous node.
-		// 4. Assign sibling as previous.
-		sibling.PreviousSibling = n.PreviousSibling // (1)
-		sibling.NextSibling = n                     // (2)
-		n.PreviousSibling.NextSibling = sibling     // (3)
-		n.PreviousSibling = sibling                 // (4)
+		// 1. Update next of previous node.
+		// 2. Assign sibling as previous.
+		// 3. Copy over previous of node.
+		// 4. Add node as next.
+		n.PreviousSibling.NextSibling = sibling     // (1)
+		n.PreviousSibling = sibling                 // (2)
+		sibling.PreviousSibling = n.PreviousSibling // (3)
+		sibling.NextSibling = n                     // (4)
 	}
 	// Does not have a previous sibling yet.
 	// 1. Reference each other.
@@ -92,25 +129,24 @@ func (n *Node) SetPrevious(sibling *Node) {
 	if n.Parent != nil { // (2)
 		n.Parent.FirstChild = sibling
 	}
-	return
-
 }
 
 // SetNext inserts the given node as the next sibling.
 func (n *Node) SetNext(sibling *Node) {
+	sibling.Remove()
 	sibling.Parent = n.Parent
 	// (a) <-> (b) | a.AddSibling(b)
 	// (a) <-> (c) <-> (b)
 	if n.NextSibling != nil {
 		// Already has a sibling.
-		// 1. Copy over next of node.
-		// 2. Add node as previous.
-		// 3. Update previous of next node.
-		// 4. Assign sibling as next.
-		sibling.NextSibling = n.NextSibling     // (1)
-		sibling.PreviousSibling = n             // (2)
-		n.NextSibling.PreviousSibling = sibling // (3)
-		n.NextSibling = sibling                 // (4)
+		// 1. Update previous of next node.
+		// 2. Assign sibling as next.
+		// 3. Copy over next of node.
+		// 4. Add node as previous.
+		n.NextSibling.PreviousSibling = sibling // (1)
+		n.NextSibling = sibling                 // (2)
+		sibling.NextSibling = n.NextSibling     // (3)
+		sibling.PreviousSibling = n             // (4)
 		return
 	}
 	// Does not have a next sibling yet.
@@ -125,6 +161,7 @@ func (n *Node) SetNext(sibling *Node) {
 
 // SetFirst inserts the given node as the first child of the node.
 func (n *Node) SetFirst(child *Node) {
+	child.Remove()
 	// Set the first child.
 	if n.FirstChild != nil {
 		n.FirstChild.SetPrevious(child)
@@ -134,11 +171,11 @@ func (n *Node) SetFirst(child *Node) {
 	child.Parent = n
 	n.FirstChild = child
 	n.LastChild = child
-	return
 }
 
 // SetLast inserts the given node as the last child of the node.
 func (n *Node) SetLast(child *Node) {
+	child.Remove()
 	// Set the last child.
 	if n.FirstChild != nil {
 		n.LastChild.SetNext(child)
@@ -148,5 +185,4 @@ func (n *Node) SetLast(child *Node) {
 	child.Parent = n
 	n.FirstChild = child
 	n.LastChild = child
-	return
 }

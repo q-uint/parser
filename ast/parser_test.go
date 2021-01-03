@@ -69,6 +69,25 @@ func ExampleParser_Expect_class() {
 	// <nil> <nil>
 }
 
+func ExampleParser_Expect_parse_node() {
+	p, _ := ast.New([]byte("1 <= 2"))
+	fmt.Println(p.Expect(func(p *ast.Parser) (*ast.Node, error) {
+		digit := ast.Capture{
+			Value: parser.CheckRuneFunc(func(r rune) bool {
+				return '0' <= r && r <= '9'
+			}),
+			Convert: func(i string) interface{} {
+				v, _ := strconv.Atoi(i)
+				return v
+			},
+		}
+		return p.Expect(op.And{digit, parser.CheckString(" <= "), digit})
+	}))
+
+	// Output:
+	// [-01] [[000] 1, [000] 2] <nil>
+}
+
 func ExampleParser_Expect_capture() {
 	p, _ := ast.New([]byte("1 <= 2"))
 	digit := ast.Capture{
@@ -87,9 +106,9 @@ func ExampleParser_Expect_capture() {
 	fmt.Println(p.Expect(digit))
 
 	// Output:
-	// [000]: 1 <nil>
+	// [000] 1 <nil>
 	// <nil> <nil>
-	// [000]: 2 <nil>
+	// [000] 2 <nil>
 }
 
 func ExampleParser_Expect_not() {
@@ -121,7 +140,7 @@ func ExampleParser_Expect_and() {
 	}))
 
 	// Output:
-	// [000]: [[001]: 1, [001]: 2] <nil>
+	// [-01] [[001] 1, [001] 2] <nil>
 }
 
 func ExampleParser_Expect_or() {
@@ -142,8 +161,8 @@ func ExampleParser_Expect_or() {
 	fmt.Println(p.Expect(op.Or{d, t, op.Not{a}}))
 
 	// Output:
-	// [000]: d <nil>
-	// [000]: at <nil>
+	// [000] d <nil>
+	// [000] at <nil>
 	// <nil> parse: expected op.Or [{0 100 <nil>} {0 116 <nil>} {{0 97 <nil>}}] but got "a"
 }
 
@@ -176,6 +195,6 @@ func ExampleParser_Expect_range() {
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
 
 	// Output:
-	// [000]: aaa <nil>
+	// [000] aaa <nil>
 	// <nil> parse: expected op.Range {4 -1 97} but got "aaa"
 }
