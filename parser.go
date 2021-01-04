@@ -277,6 +277,16 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	return state.End(), nil
 }
 
+// Check works the same as Parser.Expect, but instead it returns a bool instead
+// of an error.
+func (p *Parser) Check(i interface{}) (*Cursor, bool) {
+	mark, err := p.Expect(i)
+	if err != nil {
+		return mark, false
+	}
+	return mark, true
+}
+
 // ConvertAliases converts various default primitive types to aliases for type
 // matching.
 func ConvertAliases(i interface{}) interface{} {

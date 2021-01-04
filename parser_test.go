@@ -3,6 +3,7 @@ package parser_test
 import (
 	"fmt"
 	"github.com/di-wu/parser"
+	"github.com/di-wu/parser/op"
 	"testing"
 )
 
@@ -193,6 +194,27 @@ func TestParser_Expect_class(t *testing.T) {
 	if mark.Rune != 'o' {
 		t.Error()
 	}
+}
+
+func ExampleParser_Check_class() {
+	p, _ := parser.New([]byte("Aa1_"))
+	alphaNum := op.Or{
+		parser.CheckRuneRange('a', 'z'),
+		parser.CheckRuneRange('A', 'Z'),
+		parser.CheckRuneRange('0', '9'),
+	}
+	fmt.Println(p.Check(alphaNum))
+	fmt.Println(p.Check(alphaNum))
+	fmt.Println(p.Check(alphaNum))
+
+	fmt.Println(p.Check(alphaNum))
+	fmt.Println(p.Check('_'))
+	// Output:
+	// U+0041 A true
+	// U+0061 a true
+	// U+0031 1 true
+	// <nil> false
+	// U+005F _ true
 }
 
 func TestParser_Expect_class_err(t *testing.T) {
