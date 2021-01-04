@@ -91,7 +91,11 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 				}
 			}
 		}
-		return node, nil
+
+		if node.IsParent() {
+			// Only return node if it has children.
+			return node, nil
+		}
 	case op.Or:
 		// To keep track whether we encountered a valid value, node or not.
 		var hit bool

@@ -6,6 +6,7 @@ import (
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
 	"strconv"
+	"testing"
 )
 
 func ExampleParser_Expect_rune() {
@@ -120,6 +121,29 @@ func ExampleParser_Expect_not() {
 	// <nil>
 }
 
+func TestParser_Expect_not(t *testing.T) {
+	p, _ := ast.New([]byte("bar\nbaz"))
+	any := ast.Capture{
+		Value: op.MinZero(op.And{
+			op.Not{'\n'},
+			parser.CheckRuneFunc(func(r rune) bool {
+				return r != parser.EOD
+			}),
+		}),
+	}
+	node, err := p.Expect(op.And{
+		any,
+		'\n',
+		any,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	if len(node.Children()) != 2 {
+		t.Error(node)
+	}
+}
+
 func ExampleParser_Expect_and() {
 	p, _ := ast.New([]byte("1 <= 2"))
 	digit := ast.Capture{
@@ -156,6 +180,41 @@ func ExampleParser_Expect_or() {
 	// [000] d <nil>
 	// [000] at <nil>
 	// <nil> parse: expected op.Or [{0 100 <nil>} {0 116 <nil>} {{0 97 <nil>}}] but got "a"
+}
+
+func TestParser_Expect_and_or(t *testing.T) {
+	p, _ := ast.New([]byte("u10FFFF"))
+	node, err := p.Expect(
+		ast.Capture{
+			Value: op.And{
+				"u",
+				op.Or{
+					op.And{
+						"10",
+						op.Repeat(4,
+							op.Or{
+								parser.CheckRuneRange('0', '9'),
+								parser.CheckRuneRange('A', 'F'),
+							},
+						),
+					},
+					op.MinMax(4, 5,
+						op.Or{
+							parser.CheckRuneRange('0', '9'),
+							parser.CheckRuneRange('A', 'F'),
+						},
+					),
+				},
+			},
+		},
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if node.Value != "u10FFFF" {
+		t.Error(node)
+	}
 }
 
 func ExampleParser_Expect_xor() {
