@@ -16,7 +16,6 @@ func ExampleParser_Expect_rune() {
 	fmt.Println(p.Expect('a'))
 	fmt.Println(p.Expect('t'))
 	fmt.Println(p.Expect('a'))
-
 	// Output:
 	// <nil> <nil>
 	// <nil> parse: expected int32 100 but got "a"
@@ -32,7 +31,6 @@ func ExampleParser_Expect_string() {
 	fmt.Println(p.Expect('_'))
 	_, _ = p.Expect(' ') // Skip space.
 	fmt.Println(p.Expect("data"))
-
 	// Output:
 	// <nil> <nil>
 	// <nil> parse: expected int32 95 but got " "
@@ -62,7 +60,6 @@ func ExampleParser_Expect_class() {
 	fmt.Println(p.Expect(lt))
 	_, _ = p.Expect(' ') // Skip space.
 	fmt.Println(p.Expect(digit))
-
 	// Output:
 	// <nil> <nil>
 	// <nil> <nil>
@@ -83,7 +80,6 @@ func ExampleParser_Expect_parse_node() {
 		}
 		return p.Expect(op.And{digit, parser.CheckString(" <= "), digit})
 	}))
-
 	// Output:
 	// [-01] [[000] 1, [000] 2] <nil>
 }
@@ -104,7 +100,6 @@ func ExampleParser_Expect_capture() {
 	fmt.Println(p.Expect(digit))
 	fmt.Println(p.Expect(lt))
 	fmt.Println(p.Expect(digit))
-
 	// Output:
 	// [000] 1 <nil>
 	// <nil> <nil>
@@ -120,7 +115,6 @@ func ExampleParser_Expect_not() {
 		Value: "baz",
 	}})
 	fmt.Println(err)
-
 	// Output:
 	// parse: expected op.Not {bar} but got "bar"
 	// <nil>
@@ -138,7 +132,6 @@ func ExampleParser_Expect_and() {
 	fmt.Println(p.Expect(op.And{
 		digit, parser.CheckString(" <= "), digit,
 	}))
-
 	// Output:
 	// [-01] [[001] 1, [001] 2] <nil>
 }
@@ -159,7 +152,6 @@ func ExampleParser_Expect_or() {
 	fmt.Println(p.Expect(op.Or{d, da, data}))
 	fmt.Println(p.Expect(op.Or{at, a, ata}))
 	fmt.Println(p.Expect(op.Or{d, t, op.Not{a}}))
-
 	// Output:
 	// [000] d <nil>
 	// [000] at <nil>
@@ -179,7 +171,6 @@ func ExampleParser_Expect_xor() {
 
 	fmt.Println(p.Expect(op.XOr{d, da, data}))
 	fmt.Println(p.Expect(op.XOr{a, t}))
-
 	// Output:
 	// <nil> parse: expected op.XOr [{0 100 <nil>} {0 da <nil>} {0 data <nil>}] but got "da"
 	// <nil> parse: expected op.XOr [{0 97 <nil>} {0 116 <nil>}] but got "d"
@@ -193,7 +184,6 @@ func ExampleParser_Expect_range() {
 
 	p, _ = ast.New([]byte("aaa"))
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
-
 	// Output:
 	// [000] aaa <nil>
 	// <nil> parse: expected op.Range {4 -1 97} but got "aaa"

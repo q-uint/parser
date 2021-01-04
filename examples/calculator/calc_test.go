@@ -11,7 +11,6 @@ func ExampleParse() {
 	fmt.Println(calc.Parse("1 + 1 * 1 + 1"))
 	fmt.Println(calc.Parse("1 + 1 * (1 + 1)"))
 	fmt.Println(calc.Parse("(1 + 1) * (1 + 1)"))
-
 	// Output:
 	// (1 + 1) <nil>
 	// (1 + (1 * 1)) <nil>
@@ -26,7 +25,6 @@ func ExampleEvaluate() {
 	fmt.Println(calc.Evaluate("1 + 1 * 1 + 1"))
 	fmt.Println(calc.Evaluate("1 + 1 * (1 + 1)"))
 	fmt.Println(calc.Evaluate("(1 + 1) * (1 + 1)"))
-
 	// Output:
 	// 2 <nil>
 	// 2 <nil>
@@ -38,7 +36,6 @@ func ExampleEvaluate() {
 func ExampleCalculatorParser_Integer() {
 	p, _ := calc.New("007")
 	fmt.Println(p.Integer())
-
 	// Output:
 	// 7 <nil>
 }

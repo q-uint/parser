@@ -11,7 +11,6 @@ func ExampleParser_Current() {
 
 	current := p.Current()
 	fmt.Printf("%U: %c", current, current)
-
 	// Output:
 	// U+0073: s
 }
@@ -22,7 +21,6 @@ func ExampleParser_look_back_and_peek() {
 
 	fmt.Println(p.LookBack())
 	fmt.Println(p.Peek())
-
 	// Output:
 	// U+2460 ①
 	// U+0033 3
@@ -33,7 +31,6 @@ func ExampleParser_Next() {
 
 	current := p.Next().Current()
 	fmt.Printf("%U: %c", current, current)
-
 	// Output:
 	// U+006F: o
 }
@@ -69,7 +66,6 @@ func ExampleParser_Done() {
 	p, _ := parser.New([]byte("_"))
 
 	fmt.Println(p.Next().Done())
-
 	// Output:
 	// true
 }
@@ -91,7 +87,6 @@ func ExampleParser_Expect_rune() {
 	fmt.Printf("%U: %c\n", current, current)
 
 	fmt.Println(p.Next().Done())
-
 	// Output:
 	// U+0064: d
 	// parse: expected int32 100 but got "a"
@@ -111,7 +106,6 @@ func ExampleParser_Expect_string() {
 
 	mark, _ = p.Expect("data")
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
-
 	// Output:
 	// U+0065: e
 	// U+0061: a
@@ -162,7 +156,6 @@ func ExampleParser_Expect_class() {
 
 	mark, _ = p.Expect(digit)
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
-
 	// Output:
 	// U+0031: 1
 	// U+003D: =

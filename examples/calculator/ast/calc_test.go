@@ -12,7 +12,6 @@ func ExampleParse() {
 	fmt.Println(calc.Parse("1 + 1 * 1 + 1"))
 	fmt.Println(calc.Parse("1 + 1 * (1 + 1)"))
 	fmt.Println(calc.Parse("(1 + 1) * (1 + 1)"))
-
 	// Output:
 	// [001] [[002] [[005] 1], [003] 43, [002] [[005] 1]] <nil>
 	// [001] [[002] [[005] 1], [003] 43, [002] [[005] 1, [004] 42, [005] 1]] <nil>
@@ -27,7 +26,6 @@ func ExampleEvaluate() {
 	fmt.Println(calc.Evaluate("1 + 1 * 1 + 1"))
 	fmt.Println(calc.Evaluate("1 + 1 * (1 + 1)"))
 	fmt.Println(calc.Evaluate("(1 + 1) * (1 + 1)"))
-
 	// Output:
 	// 2 <nil>
 	// 2 <nil>
@@ -46,7 +44,6 @@ func ExampleInteger() {
 	fmt.Println(p("007").Expect(calc.Factor))
 	fmt.Println(p("007").Expect(calc.MulDiv))
 	fmt.Println(p("007").Expect(calc.AddSub))
-
 	// Output:
 	// [005] 7 <nil>
 	// [005] 7 <nil>

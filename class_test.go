@@ -16,7 +16,6 @@ func ExampleAnonymousClass_rune() {
 
 	mark, _ := alpha(p)
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
-
 	// Output:
 	// U+0064: d
 }
@@ -37,7 +36,6 @@ func ExampleAnonymousClass_string() {
 
 	mark, _ := walrus(p)
 	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
-
 	// Output:
 	// U+003D: =
 }
