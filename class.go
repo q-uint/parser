@@ -15,6 +15,14 @@ func CheckRune(r rune) AnonymousClass {
 	}
 }
 
+// CheckRuneRange returns an AnonymousClass that checks whether the current rune of
+// the parser is inside the given range (inclusive).
+func CheckRuneRange(min, max rune) AnonymousClass {
+	return CheckRuneFunc(func(r rune) bool {
+		return min <= r && r <= max
+	})
+}
+
 // CheckRuneFunc returns an AnonymousClass that checks whether the current rune of
 // the parser matches the given validator.
 func CheckRuneFunc(f func(r rune) bool) AnonymousClass {
