@@ -212,7 +212,7 @@ func TestParser_Expect_and_or(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if node.Value != "u10FFFF" {
+	if node.ValueString() != "u10FFFF" {
 		t.Error(node)
 	}
 }

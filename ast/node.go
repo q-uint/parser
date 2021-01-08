@@ -42,6 +42,11 @@ type Node struct {
 	LastChild *Node
 }
 
+// ValueString casts the value to a string.
+func (n *Node) ValueString() string {
+	return n.Value.(string)
+}
+
 func (n *Node) String() string {
 	if n.IsParent() {
 		var children []string

@@ -34,7 +34,6 @@ func ExampleEvaluate() {
 	// 4 <nil>
 }
 
-
 func ExampleInteger() {
 	p := func(s string) *ast.Parser {
 		p, _ := ast.New([]byte(s))
