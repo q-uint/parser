@@ -2,7 +2,7 @@ package calc_test
 
 import (
 	"fmt"
-	calc "github.com/di-wu/parser/examples/calculator"
+	"github.com/di-wu/parser/examples/calculator"
 )
 
 func ExampleParse() {

@@ -1,0 +1,15 @@
+# ELF32-header (v0.1.0) github.com/di-wu/parser/examples/elf
+
+Header  <-- Indent Type
+
+Indent  <-- Magic Class Data Version x00{9}
+Magic    <- x7f x45 x4c x46
+Class   <-- [x00-x02]
+Data    <-- [x00-x02]
+Version  <- x01       # value must be 0x01
+
+# from this point onward the values all depends on the endianness.
+
+Type    <-- [x00-xff]{2}
+
+# etc.

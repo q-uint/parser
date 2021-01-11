@@ -22,6 +22,12 @@ func New(input []byte) (*Parser, error) {
 	return &p, err
 }
 
+// DecodeRune allows you to redefine the way runes are decoded form the byte
+// stream. By default utf8.DecodeRune is used.
+func (ap *Parser) DecodeRune(d func(p []byte) (rune, int)) {
+	ap.internal.DecodeRune(d)
+}
+
 // Expect checks whether the buffer contains the given value.
 func (ap *Parser) Expect(i interface{}) (*Node, error) {
 	i = ConvertAliases(i)

@@ -12,18 +12,20 @@ const EOD = 1<<31 - 1
 type Parser struct {
 	buffer []byte
 	cursor *Cursor
+	decode func([]byte) (rune, int)
 
-	converter func(i interface{}) interface{}
-	operator  func(i interface{}) (*Cursor, error)
+	converter func(interface{}) interface{}
+	operator  func(interface{}) (*Cursor, error)
 }
 
 // New creates a new Parser.
 func New(input []byte) (*Parser, error) {
 	p := Parser{
 		buffer: input,
+		decode: utf8.DecodeRune,
 	}
 
-	current, size := utf8.DecodeRune(p.buffer)
+	current, size := p.decode(p.buffer)
 	if size == 0 {
 		// Nothing got decoded.
 		return nil, &InitError{
@@ -36,6 +38,12 @@ func New(input []byte) (*Parser, error) {
 		position: size - 1,
 	}
 	return &p, nil
+}
+
+// DecodeRune allows you to redefine the way runes are decoded form the byte
+// stream. By default utf8.DecodeRune is used.
+func (p *Parser) DecodeRune(d func(p []byte) (rune, int)) {
+	p.decode = d
 }
 
 // SetConverter allows you to add additional (prioritized) converters to the
@@ -56,7 +64,7 @@ func (p *Parser) Next() *Parser {
 		return p
 	}
 
-	current, size := utf8.DecodeRune(p.buffer[p.cursor.position+1:])
+	current, size := p.decode(p.buffer[p.cursor.position+1:])
 	if size == 0 {
 		// Nothing got decoded.
 		current = EOD
@@ -92,9 +100,9 @@ func (p *Parser) LookBack() *Cursor {
 	}
 
 	// We don't know the size of the previous rune... 1 or more?
-	previous, size := utf8.DecodeRune(p.buffer[p.cursor.position-1:])
+	previous, size := p.decode(p.buffer[p.cursor.position-1:])
 	for i := 2; previous == utf8.RuneError; i++ {
-		previous, size = utf8.DecodeRune(p.buffer[p.cursor.position-i:])
+		previous, size = p.decode(p.buffer[p.cursor.position-i:])
 	}
 	return &Cursor{
 		Rune:     previous,
