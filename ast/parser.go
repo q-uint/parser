@@ -104,6 +104,13 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			Value: p.Slice(start, p.LookBack()),
 		}, nil
 
+	case LoopUp:
+		i, err := v.Get()
+		if err != nil {
+			return nil, err
+		}
+		return ap.Expect(i)
+
 	case op.Not:
 		defer p.Jump(start)
 		if _, err := ap.Expect(v.Value); err == nil {

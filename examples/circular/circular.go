@@ -2,7 +2,6 @@ package circular
 
 import (
 	"github.com/di-wu/parser/ast"
-	"github.com/di-wu/parser/im"
 	"github.com/di-wu/parser/op"
 )
 
@@ -28,12 +27,12 @@ func Parse(input string) (*ast.Node, error) {
 	})
 }
 
-func NewCircularParser(input []byte) (*im.Parser, error) {
+func NewCircularParser(input []byte) (*ast.Parser, error) {
 	table = map[string]interface{}{
 		"circular": op.Or{
 			op.And{
 				'0',
-				im.LoopUp{
+				ast.LoopUp{
 					Key:   "circular",
 					Table: &table,
 				},
@@ -41,7 +40,7 @@ func NewCircularParser(input []byte) (*im.Parser, error) {
 			'1',
 		},
 	}
-	p, err := im.New(input, table)
+	p, err := ast.New(input)
 	if err != nil {
 		return nil, err
 	}
