@@ -15,16 +15,20 @@ func Parse(input []byte) (*ast.Node, error) {
 }
 
 func NewELFParser(input []byte) (*ast.Parser, error) {
-	p, err := ast.New(input)
+	ip, err := parser.New(input)
 	if err != nil {
 		return nil, err
 	}
-	p.DecodeRune(func(p []byte) (rune, int) {
+	ip.DecodeRune(func(p []byte) (rune, int) {
 		if len(p) == 0 {
 			return rune(-1), 0
 		}
 		return rune(p[0]), 1
 	})
+	p, err := ast.NewFromParser(ip)
+	if err != nil {
+		return nil, err
+	}
 	return p, nil
 }
 

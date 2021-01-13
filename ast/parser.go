@@ -8,6 +8,9 @@ import (
 // Parser represents a general purpose AST parser.
 type Parser struct {
 	internal *parser.Parser
+
+	converter func(interface{}) interface{}
+	operator  func(interface{}) (*Node, error)
 }
 
 // New creates a new Parser.
@@ -16,24 +19,52 @@ func New(input []byte) (*Parser, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := Parser{
-		internal: internal,
-	}
-	return &p, err
+	return NewFromParser(internal)
 }
 
-// DecodeRune allows you to redefine the way runes are decoded form the byte
-// stream. By default utf8.DecodeRune is used.
-func (ap *Parser) DecodeRune(d func(p []byte) (rune, int)) {
-	ap.internal.DecodeRune(d)
+// SetConverter allows you to add additional (prioritized) converters to the
+// parser. e.g. convert aliases to other types or overwrite defaults.
+func (ap *Parser) SetConverter(c func(i interface{}) interface{}) {
+	ap.converter = c
+}
+
+// SetOperator allows you to support additional (prioritized) operators.
+// Should return an UnsupportedType error if the given value is not supported.
+func (ap *Parser) SetOperator(o func(i interface{}) (*Node, error)) {
+	ap.operator = o
+}
+
+// NewFromParser creates a new Parser from a parser.Parser. This allows you to
+// customize the internal parser. If no customization is needed, use New.
+func NewFromParser(p *parser.Parser) (*Parser, error) {
+	return &Parser{
+		internal: p,
+	}, nil
 }
 
 // Expect checks whether the buffer contains the given value.
 func (ap *Parser) Expect(i interface{}) (*Node, error) {
 	i = ConvertAliases(i)
+	if ap.converter != nil {
+		i = ap.converter(i)
+	}
 
 	p := ap.internal
-	switch start := p.Mark(); v := i.(type) {
+	start := p.Mark()
+	if ap.operator != nil {
+		// Takes priority over default values. If an unsupported error is
+		// returned we can check if one of the predefined types match.
+		node, err := ap.operator(i)
+		if err == nil {
+			return node, nil
+		}
+
+		if _, ok := err.(*parser.UnsupportedType); !ok {
+			p.Jump(start)
+			return node, err
+		}
+	}
+	switch v := i.(type) {
 	case rune, string, parser.AnonymousClass:
 		// Just check if it matches.
 		if _, err := p.Expect(v); err != nil {
