@@ -112,9 +112,11 @@ func ExampleParser_Expect_not() {
 
 	_, err := p.Expect(op.Not{Value: "bar"})
 	fmt.Println(err)
-	_, err = p.Expect(op.Not{Value: ast.Capture{
-		Value: "baz",
-	}})
+	_, err = p.Expect(op.Not{
+		Value: ast.Capture{
+			Value: "baz",
+		},
+	})
 	fmt.Println(err)
 	// Output:
 	// parse: expected op.Not {bar} but got "bar"
@@ -125,7 +127,7 @@ func TestParser_Expect_not(t *testing.T) {
 	p, _ := ast.New([]byte("bar\nbaz"))
 	any := ast.Capture{
 		Value: op.MinZero(op.And{
-			op.Not{'\n'},
+			op.Not{Value: '\n'},
 			parser.CheckRuneFunc(func(r rune) bool {
 				return r != parser.EOD
 			}),
@@ -175,7 +177,7 @@ func ExampleParser_Expect_or() {
 
 	fmt.Println(p.Expect(op.Or{d, da, data}))
 	fmt.Println(p.Expect(op.Or{at, a, ata}))
-	fmt.Println(p.Expect(op.Or{d, t, op.Not{a}}))
+	fmt.Println(p.Expect(op.Or{d, t, op.Not{Value: a}}))
 	// Output:
 	// [000] d <nil>
 	// [000] at <nil>

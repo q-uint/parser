@@ -3,7 +3,12 @@ package op
 // Not (!) represents a negation of the Value. This should not consume data.
 // e.g. Not{'a'} should check if the first rune is not an 'a'.
 type Not struct {
-	// Value to check.
+	Value interface{}
+}
+
+// Ensure (&) represents a positive lookup of the Value. This should not consume
+// data. e.g. Ensure{"abc"} should check if the strings is present.
+type Ensure struct {
 	Value interface{}
 }
 

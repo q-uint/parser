@@ -18,6 +18,18 @@ func ExampleNot() {
 	// <nil>
 }
 
+func ExampleEnsure() {
+	p, _ := parser.New([]byte("bar"))
+
+	fmt.Println(p.Expect(op.Ensure{Value: "ba"}))
+	fmt.Println(p.Expect(op.Ensure{Value: "baz"}))
+	fmt.Println(p.Expect("bar"))
+	// Output:
+	// <nil> <nil>
+	// <nil> parse: expected string baz but got "bar"
+	// U+0072 r <nil>
+}
+
 func ExampleAnd() {
 	p, _ := parser.New([]byte("foo bar baz"))
 

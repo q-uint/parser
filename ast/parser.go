@@ -119,6 +119,11 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 				Expected: v, Actual: p.Slice(start, p.LookBack()),
 			}
 		}
+	case op.Ensure:
+		if n, err := ap.Expect(v.Value); err != nil {
+			return n, err
+		}
+		p.Jump(start)
 	case op.And:
 		node := &Node{Type: -1}
 		for _, i := range v {

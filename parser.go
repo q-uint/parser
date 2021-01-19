@@ -203,6 +203,11 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 				Expected: v, Actual: p.Slice(start, last),
 			}
 		}
+	case op.Ensure:
+		if last, err := p.Expect(v.Value); err != nil {
+			return last, err
+		}
+		p.Jump(start)
 	case op.And:
 		var last *Cursor
 		for _, i := range v {
