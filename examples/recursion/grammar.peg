@@ -1,0 +1,10 @@
+# Recursion (v0.1.0) github.com/di-wu/parser/examples/recursion
+
+Value <-- 'x'
+
+# Do NOT do the following:
+Infinite <-- And / Value
+And       <- Infinite '&&' Infinite
+
+# Better solution:
+Finite <- Value ('&&' Finite)*
