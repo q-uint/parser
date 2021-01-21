@@ -1,0 +1,11 @@
+# Recursion (v0.1.1) github.com/di-wu/parser/examples/recursion
+
+Value <-- '0' / [1-9] [0-9]*
+SP     <- ' '
+
+# Do NOT do the following:
+Infinite <-- AndInf / Value
+AndInf    <- Infinite SP* '+' SP* Infinite
+
+# Better solution:
+Finite <- Value (SP* '+' SP* Finite)*

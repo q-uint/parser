@@ -1,0 +1,8 @@
+# Precedence (v0.1.0) github.com/di-wu/parser/examples/precedence
+
+Plus  <-- Mult (SP* '+' SP* Mult)*
+Mult  <-- Rule (SP* '*' SP* Rule)*
+Rule   <- Value / '(' SP* Plus SP* ')'
+Value <-- '0' / [1-9] [0-9]*
+
+SP     <- ' '
