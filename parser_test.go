@@ -23,8 +23,8 @@ func ExampleParser_look_back_and_peek() {
 	fmt.Println(p.LookBack())
 	fmt.Println(p.Peek())
 	// Output:
-	// U+2460 ①
-	// U+0033 3
+	// U+2460: ①
+	// U+0033: 3
 }
 
 func ExampleParser_Next() {
@@ -61,6 +61,28 @@ func TestParser_Slice(t *testing.T) {
 	if s := p.Slice(m1, m3); s != "abc" {
 		t.Error(s)
 	}
+}
+
+func Example_line_returns() {
+	// Unix, Unix, Windows, Mac, Windows, Mac
+	p, _ := parser.New([]byte("\n\n\r\n\r\r\n\r"))
+	fmt.Println(p.Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	fmt.Println(p.Next().Mark().Position())
+	// Output:
+	// 0 0
+	// 1 0
+	// 2 0
+	// 2 1
+	// 3 0
+	// 4 0
+	// 4 1
+	// 5 0
 }
 
 func ExampleParser_Done() {
@@ -210,11 +232,11 @@ func ExampleParser_Check_class() {
 	fmt.Println(p.Check(alphaNum))
 	fmt.Println(p.Check('_'))
 	// Output:
-	// U+0041 A true
-	// U+0061 a true
-	// U+0031 1 true
+	// U+0041: A true
+	// U+0061: a true
+	// U+0031: 1 true
 	// <nil> false
-	// U+005F _ true
+	// U+005F: _ true
 }
 
 func TestParser_Expect_class_err(t *testing.T) {

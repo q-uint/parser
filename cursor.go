@@ -16,8 +16,13 @@ type Cursor struct {
 	row, column int
 }
 
+// Position returns the row and column of the cursors location.
+func (c *Cursor) Position() (int, int) {
+	return c.row, c.column
+}
+
 func (c *Cursor) String() string {
-	return fmt.Sprintf("%U %c", c.Rune, c.Rune)
+	return fmt.Sprintf("%U: %c", c.Rune, c.Rune)
 }
 
 // state manages the state of a parser. It contains a pointer to the last

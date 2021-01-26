@@ -1,6 +1,10 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/di-wu/parser/op"
+	"strings"
+)
 
 // InitError is an error that occurs on instantiating new structures.
 type InitError struct {
@@ -48,17 +52,50 @@ type ExpectedParseError struct {
 	Conflict Cursor
 }
 
-func (e *ExpectedParseError) Error() string {
-	var expected string
-	switch v := e.Expected.(type) {
+func Stringer(i interface{}) string {
+	switch v := i.(type) {
 	case rune:
-		expected = fmt.Sprintf("'%s'", string(v))
+		return fmt.Sprintf("'%s'", string(v))
 	case string:
-		expected = fmt.Sprintf("%q", v)
+		return fmt.Sprintf("%q", v)
+	case op.Not:
+		return fmt.Sprintf("!%s", Stringer(v.Value))
+	case op.Ensure:
+		return fmt.Sprintf("?%s", Stringer(v.Value))
+	case op.And:
+		and := make([]string, len(v))
+		for i, v := range v {
+			and[i] = Stringer(v)
+		}
+		return fmt.Sprintf("and[%s]", strings.Join(and, " "))
+	case op.Or:
+		or := make([]string, len(v))
+		for i, v := range v {
+			or[i] = Stringer(v)
+		}
+		return fmt.Sprintf("or[%s]", strings.Join(or, " "))
+	case op.XOr:
+		xor := make([]string, len(v))
+		for i, v := range v {
+			xor[i] = Stringer(v)
+		}
+		return fmt.Sprintf("xor[%s]", strings.Join(xor, " "))
+	case op.Range:
+		if v.Max == -1 {
+			switch v.Min {
+			case 0:
+				return fmt.Sprintf("%s*", Stringer(v.Value))
+			case 1:
+				return fmt.Sprintf("%s+", Stringer(v.Value))
+			}
+		}
+		return fmt.Sprintf("%s{%d:%d}", Stringer(v.Value), v.Min, v.Max)
 	default:
-		expected = fmt.Sprintf("%v", v)
+		return fmt.Sprintf("%v", v)
 	}
+}
 
+func (e *ExpectedParseError) Error() string {
 	got := e.String
 	if len(e.String) == 1 {
 		got = fmt.Sprintf("'%s'", string([]rune(e.String)[0]))
@@ -68,7 +105,7 @@ func (e *ExpectedParseError) Error() string {
 
 	return fmt.Sprintf(
 		"parse conflict [%02d:%03d]: expected %T %s but got %s",
-		e.Conflict.row, e.Conflict.column, e.Expected, expected, got,
+		e.Conflict.row, e.Conflict.column, e.Expected, Stringer(e.Expected), got,
 	)
 }
 

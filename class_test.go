@@ -14,10 +14,9 @@ func ExampleAnonymousClass_rune() {
 				'a' <= r && r <= 'z'
 	}
 
-	mark, _ := alpha(p)
-	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
+	fmt.Println(alpha(p))
 	// Output:
-	// U+0064: d
+	// U+0064: d true
 }
 
 func ExampleAnonymousClass_string() {
@@ -34,8 +33,19 @@ func ExampleAnonymousClass_string() {
 		return last, true
 	}
 
-	mark, _ := walrus(p)
-	fmt.Printf("%U: %c\n", mark.Rune, mark.Rune)
+	fmt.Println(walrus(p))
 	// Output:
-	// U+003D: =
+	// U+003D: = true
+}
+
+func ExampleAnonymousClass_error() {
+	p, _ := parser.New([]byte("0"))
+	lower := func(p *parser.Parser) (*parser.Cursor, bool) {
+		r := p.Current()
+		return p.Mark(), 'a' <= r && r <= 'z'
+	}
+
+	fmt.Println(lower(p))
+	// Output:
+	// U+0030: 0 false
 }

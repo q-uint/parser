@@ -13,6 +13,8 @@ type ParseNode func(p *Parser) (*Node, error)
 type Capture struct {
 	// Type of the node.
 	Type int
+	// TypeStrings contains all the string representations of the available types.
+	TypeStrings []string
 	// Value is the expression to capture the value of the node.
 	Value interface{}
 
@@ -21,12 +23,21 @@ type Capture struct {
 	Convert func(i string) interface{}
 }
 
+func (c Capture) String() string {
+	if 0 <= c.Type && c.Type < len(c.TypeStrings) {
+		return fmt.Sprintf("%s", c.TypeStrings[c.Type])
+	}
+	return fmt.Sprintf("{%03d}", c.Type)
+}
+
 // Node is a simple node in a tree with double linked lists instead of slices to
 // keep track of its siblings and children. A node is either a value or a
 // parent node.
 type Node struct {
 	// Type of the node.
 	Type int
+	// TypeStrings contains all the string representations of the available types.
+	TypeStrings []string
 	// Value of the node. Only possible if it has no children.
 	Value interface{}
 
@@ -48,14 +59,21 @@ func (n *Node) ValueString() string {
 }
 
 func (n *Node) String() string {
+	var prefix string
+	if 0 <= n.Type && n.Type < len(n.TypeStrings) {
+		prefix = fmt.Sprintf("[%s]", n.TypeStrings[n.Type])
+	} else {
+		prefix = fmt.Sprintf("[%03d]", n.Type)
+	}
+
 	if n.IsParent() {
 		var children []string
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			children = append(children, c.String())
 		}
-		return fmt.Sprintf("[%03d] [%v]", n.Type, strings.Join(children, ", "))
+		return fmt.Sprintf("%s [%v]", prefix, strings.Join(children, ", "))
 	}
-	return fmt.Sprintf("[%03d] %v", n.Type, n.Value)
+	return fmt.Sprintf("%s %v", prefix, n.Value)
 }
 
 // IsParent returns whether the node has children and thus is not a value node.

@@ -96,12 +96,14 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 		if v.Convert != nil {
 			return &Node{
 				Type:  v.Type,
+				TypeStrings: v.TypeStrings,
 				Value: v.Convert(p.Slice(start, p.LookBack())),
 			}, nil
 		}
 		return &Node{
-			Type:  v.Type,
-			Value: p.Slice(start, p.LookBack()),
+			Type:        v.Type,
+			TypeStrings: v.TypeStrings,
+			Value:       p.Slice(start, p.LookBack()),
 		}, nil
 
 	case LoopUp:

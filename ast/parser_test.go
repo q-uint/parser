@@ -110,17 +110,15 @@ func ExampleParser_Expect_capture() {
 func ExampleParser_Expect_not() {
 	p, _ := ast.New([]byte("bar"))
 
-	_, err := p.Expect(op.Not{Value: "bar"})
-	fmt.Println(err)
-	_, err = p.Expect(op.Not{
+	fmt.Println(p.Expect(op.Not{Value: "bar"}))
+	fmt.Println(p.Expect(op.Not{
 		Value: ast.Capture{
 			Value: "baz",
 		},
-	})
-	fmt.Println(err)
+	}))
 	// Output:
-	// parse conflict [00:003]: expected op.Not {bar} but got "bar"
-	// <nil>
+	// <nil> parse conflict [00:003]: expected op.Not !"bar" but got "bar"
+	// <nil> <nil>
 }
 
 func TestParser_Expect_not(t *testing.T) {
@@ -166,22 +164,38 @@ func ExampleParser_Expect_or() {
 	p, _ := ast.New([]byte("data"))
 
 	var (
-		d    = ast.Capture{Value: 'd'}
-		da   = ast.Capture{Value: "da"}
-		data = ast.Capture{Value: "data"}
-		a    = ast.Capture{Value: 'a'}
-		at   = ast.Capture{Value: "at"}
-		ata  = ast.Capture{Value: "ata"}
-		t    = ast.Capture{Value: 't'}
+		types = []string{
+			"d", "da", "data",
+		}
+
+		d = ast.Capture{
+			Type:        0,
+			TypeStrings: types,
+			Value:       'd',
+		}
+		da = ast.Capture{
+			Type:        1,
+			TypeStrings: types,
+			Value:       "da",
+		}
+		data = ast.Capture{
+			Type:        2,
+			TypeStrings: types,
+			Value:       "data",
+		}
+		a   = ast.Capture{Value: 'a'}
+		at  = ast.Capture{Value: "at"}
+		ata = ast.Capture{Value: "ata"}
+		t   = ast.Capture{Value: 't'}
 	)
 
 	fmt.Println(p.Expect(op.Or{d, da, data}))
 	fmt.Println(p.Expect(op.Or{at, a, ata}))
 	fmt.Println(p.Expect(op.Or{d, t, op.Not{Value: a}}))
 	// Output:
-	// [000] d <nil>
+	// [d] d <nil>
 	// [000] at <nil>
-	// <nil> parse conflict [00:004]: expected op.Or [{0 100 <nil>} {0 116 <nil>} {{0 97 <nil>}}] but got 'a'
+	// <nil> parse conflict [00:004]: expected op.Or or[d {000} !{000}] but got 'a'
 }
 
 func TestParser_Expect_and_or(t *testing.T) {
@@ -223,9 +237,25 @@ func ExampleParser_Expect_xor() {
 	p, _ := ast.New([]byte("data"))
 
 	var (
-		d    = ast.Capture{Value: 'd'}
-		da   = ast.Capture{Value: "da"}
-		data = ast.Capture{Value: "data"}
+		types = []string{
+			"d", "da", "data",
+		}
+
+		d = ast.Capture{
+			Type:        0,
+			TypeStrings: types,
+			Value:       'd',
+		}
+		da = ast.Capture{
+			Type:        1,
+			TypeStrings: types,
+			Value:       "da",
+		}
+		data = ast.Capture{
+			Type:        2,
+			TypeStrings: types,
+			Value:       "data",
+		}
 		a    = ast.Capture{Value: 'a'}
 		t    = ast.Capture{Value: 't'}
 	)
@@ -233,8 +263,8 @@ func ExampleParser_Expect_xor() {
 	fmt.Println(p.Expect(op.XOr{d, da, data}))
 	fmt.Println(p.Expect(op.XOr{a, t}))
 	// Output:
-	// <nil> parse conflict [00:001]: expected op.XOr [{0 100 <nil>} {0 da <nil>} {0 data <nil>}] but got "da"
-	// <nil> parse conflict [00:000]: expected op.XOr [{0 97 <nil>} {0 116 <nil>}] but got 'd'
+	// <nil> parse conflict [00:001]: expected op.XOr xor[d da data] but got "da"
+	// <nil> parse conflict [00:000]: expected op.XOr xor[{000} {000}] but got 'd'
 }
 
 func ExampleParser_Expect_range() {
@@ -247,5 +277,5 @@ func ExampleParser_Expect_range() {
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
 	// Output:
 	// [000] aaa <nil>
-	// <nil> parse conflict [00:003]: expected op.Range {4 -1 97} but got "aaa"
+	// <nil> parse conflict [00:003]: expected op.Range 'a'{4:-1} but got "aaa"
 }

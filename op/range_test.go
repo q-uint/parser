@@ -16,8 +16,8 @@ func ExampleMin() {
 	p.Jump(start)
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
 	// Output:
-	// U+0061 a <nil>
-	// <nil> parse conflict [00:002]: expected op.Range {4 -1 97} but got "aaa"
+	// U+0061: a <nil>
+	// <nil> parse conflict [00:002]: expected op.Range 'a'{4:-1} but got "aaa"
 }
 
 func ExampleMinZero() {
@@ -27,8 +27,8 @@ func ExampleMinZero() {
 	fmt.Println(p.Expect(op.MinZero('b'))) // 1 * 'b'
 	fmt.Println(p.Expect(op.MinZero('c'))) // 0 * 'c'
 	// Output:
-	// U+0061 a <nil>
-	// U+0062 b <nil>
+	// U+0061: a <nil>
+	// U+0062: b <nil>
 	// <nil> <nil>
 }
 
@@ -39,9 +39,9 @@ func ExampleMinOne() {
 	fmt.Println(p.Expect(op.MinOne('b'))) // 1 * 'b'
 	fmt.Println(p.Expect(op.MinOne('c'))) // err
 	// Output:
-	// U+0061 a <nil>
-	// U+0062 b <nil>
-	// <nil> parse conflict [00:004]: expected op.Range {1 -1 99} but got ""
+	// U+0061: a <nil>
+	// U+0062: b <nil>
+	// <nil> parse conflict [00:004]: expected op.Range 'c'+ but got ""
 }
 
 func ExampleMinMax() {
@@ -52,10 +52,10 @@ func ExampleMinMax() {
 	fmt.Println(p.Expect(op.MinMax(0, 1, 'b')))  // 1 * 'b'
 	fmt.Println(p.Expect(op.MinMax(1, -1, 'c'))) // err
 	// Output:
-	// U+0061 a <nil>
-	// U+0061 a <nil>
-	// U+0062 b <nil>
-	// <nil> parse conflict [00:004]: expected op.Range {1 -1 99} but got ""
+	// U+0061: a <nil>
+	// U+0061: a <nil>
+	// U+0062: b <nil>
+	// <nil> parse conflict [00:004]: expected op.Range 'c'+ but got ""
 }
 
 func ExampleOptional() {
@@ -65,9 +65,9 @@ func ExampleOptional() {
 	fmt.Println(p.Expect(op.Optional('b'))) // 0 * 'a'
 	fmt.Println(p.Expect(op.Optional('c'))) // 1 * 'a'
 	// Output:
-	// U+0061 a <nil>
+	// U+0061: a <nil>
 	// <nil> <nil>
-	// U+0063 c <nil>
+	// U+0063: c <nil>
 }
 
 func ExampleRepeat() {
@@ -77,7 +77,7 @@ func ExampleRepeat() {
 	fmt.Println(p.Expect(op.Repeat(2, 'b'))) // 2 * b'
 	fmt.Println(p.Expect(op.Repeat(1, 'c'))) // err
 	// Output:
-	// U+0061 a <nil>
-	// U+0062 b <nil>
-	// <nil> parse conflict [00:003]: expected op.Range {1 1 99} but got 'b'
+	// U+0061: a <nil>
+	// U+0062: b <nil>
+	// <nil> parse conflict [00:003]: expected op.Range 'c'{1:1} but got 'b'
 }
