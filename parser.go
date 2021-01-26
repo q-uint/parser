@@ -34,8 +34,8 @@ func New(input []byte) (*Parser, error) {
 	}
 
 	p.cursor = &Cursor{
-		Rune:     current,
-		position: size - 1,
+		Rune: current,
+		size: size,
 	}
 	return &p, nil
 }
@@ -64,14 +64,28 @@ func (p *Parser) Next() *Parser {
 		return p
 	}
 
-	current, size := p.decode(p.buffer[p.cursor.position+1:])
+	// Move position to the next rune.
+	// |__|_| < next rune is position + size
+	//  ^
+	//  rune of size 2, position 0
+	p.cursor.position += p.cursor.size
+
+	current, size := p.decode(p.buffer[p.cursor.position:])
 	if size == 0 {
 		// Nothing got decoded.
 		current = EOD
 	}
 
+	// Previous rune was an end of line, we are on a new line now.
+	if p.cursor.Rune == '\n' || (p.cursor.Rune == '\r' && current != '\n') {
+		p.cursor.row += 1
+		p.cursor.column = 0
+	} else {
+		p.cursor.column += p.cursor.size
+	}
+
 	p.cursor.Rune = current
-	p.cursor.position += size
+	p.cursor.size = size
 
 	return p
 }
@@ -104,9 +118,24 @@ func (p *Parser) LookBack() *Cursor {
 	for i := 2; previous == utf8.RuneError; i++ {
 		previous, size = p.decode(p.buffer[p.cursor.position-i:])
 	}
+
+	var (
+		row    = p.cursor.row
+		column = p.cursor.column
+	)
+	if p.cursor.Rune == '\n' || (p.cursor.Rune == '\r' && p.Peek().Rune != '\n') {
+		row -= 1
+		column = 0
+	} else {
+		column -= size
+	}
+
 	return &Cursor{
 		Rune:     previous,
+		size:     size,
 		position: p.cursor.position - size,
+		row:      row,
+		column:   column,
 	}
 }
 
@@ -127,10 +156,13 @@ func (p *Parser) Jump(mark *Cursor) *Parser {
 // Slice returns the value in between the two given cursors [start:end]. The end
 // value is inclusive!
 func (p *Parser) Slice(start *Cursor, end *Cursor) string {
+	if start.Rune == EOD {
+		return ""
+	}
 	if end == nil { // Just to be sure...
 		end = start
 	}
-	return string(p.buffer[start.position : end.position+1])
+	return string(p.buffer[start.position : end.position+end.size])
 }
 
 // Expect checks whether the buffer contains the given value. It consumes their
@@ -164,10 +196,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	switch start := p.Mark(); v := i.(type) {
 	case rune:
 		if p.cursor.Rune != v {
-			p.Jump(start)
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: string(p.cursor.Rune),
-			}
+			return nil, p.ExpectedParseError(v, start, start)
 		}
 		state.Ok(p.Mark())
 	case string:
@@ -178,11 +207,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		}
 		for _, r := range []rune(v) {
 			if p.cursor.Rune != r {
-				conflict := p.Mark()
-				p.Jump(start)
-				return nil, &ExpectedParseError{
-					Expected: v, Actual: p.Slice(start, conflict),
-				}
+				return nil, p.ExpectedParseError(v, start, p.Mark())
 			}
 			state.Ok(p.Mark())
 		}
@@ -190,18 +215,17 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 	case AnonymousClass:
 		last, passed := v(p)
 		if !passed {
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: state.Fail(start, last, true),
+			if last == nil {
+				last = start
 			}
+			return nil, p.ExpectedParseError(v, start, p.Jump(last).Peek())
 		}
 		state.Ok(last)
 
 	case op.Not:
 		defer p.Jump(start)
 		if last, err := p.Expect(v.Value); err == nil {
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, last),
-			}
+			return nil, p.ExpectedParseError(v, start, last)
 		}
 	case op.Ensure:
 		if last, err := p.Expect(v.Value); err != nil {
@@ -213,9 +237,10 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 		for _, i := range v {
 			mark, err := p.Expect(i)
 			if err != nil {
-				return nil, &ExpectedParseError{
-					Expected: v, Actual: state.Fail(start, last, true),
+				if last == nil {
+					last = start
 				}
+				return nil, p.ExpectedParseError(v, start, p.Jump(last).Peek())
 			}
 			last = mark
 		}
@@ -230,9 +255,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			}
 		}
 		if last == nil {
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: state.Fail(start, last, true),
-			}
+			return nil, p.ExpectedParseError(v, start, start)
 		}
 		state.Ok(last)
 	case op.XOr:
@@ -241,18 +264,15 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			mark, err := p.Expect(i)
 			if err == nil {
 				if last != nil {
-					return nil, &ExpectedParseError{
-						Expected: v, Actual: state.Fail(start, mark, false),
-					}
+					p.Jump(start)
+					return nil, p.ExpectedParseError(v, start, mark)
 				}
 				last = mark
 				p.Jump(start) // Go back to the start.
 			}
 		}
 		if last == nil {
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: state.Fail(start, last, true),
-			}
+			return nil, p.ExpectedParseError(v, start, last)
 		}
 		state.Ok(last)
 
@@ -276,9 +296,7 @@ func (p *Parser) Expect(i interface{}) (*Cursor, error) {
 			}
 		}
 		if count < v.Min {
-			return nil, &ExpectedParseError{
-				Expected: v, Actual: state.Fail(start, last, true),
-			}
+			return nil, p.ExpectedParseError(v, start, last)
 		}
 		state.Ok(last)
 

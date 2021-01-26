@@ -17,7 +17,7 @@ func ExampleMin() {
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
 	// Output:
 	// U+0061 a <nil>
-	// <nil> parse: expected op.Range {4 -1 97} but got "aaa"
+	// <nil> parse conflict [00:002]: expected op.Range {4 -1 97} but got "aaa"
 }
 
 func ExampleMinZero() {
@@ -41,7 +41,7 @@ func ExampleMinOne() {
 	// Output:
 	// U+0061 a <nil>
 	// U+0062 b <nil>
-	// <nil> parse: expected op.Range {1 -1 99} but got "b"
+	// <nil> parse conflict [00:004]: expected op.Range {1 -1 99} but got ""
 }
 
 func ExampleMinMax() {
@@ -55,7 +55,7 @@ func ExampleMinMax() {
 	// U+0061 a <nil>
 	// U+0061 a <nil>
 	// U+0062 b <nil>
-	// <nil> parse: expected op.Range {1 -1 99} but got "b"
+	// <nil> parse conflict [00:004]: expected op.Range {1 -1 99} but got ""
 }
 
 func ExampleOptional() {
@@ -79,5 +79,5 @@ func ExampleRepeat() {
 	// Output:
 	// U+0061 a <nil>
 	// U+0062 b <nil>
-	// <nil> parse: expected op.Range {1 1 99} but got "b"
+	// <nil> parse conflict [00:003]: expected op.Range {1 1 99} but got 'b'
 }

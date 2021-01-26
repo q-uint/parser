@@ -7,8 +7,13 @@ import "fmt"
 type Cursor struct {
 	// Rune is the value that the cursor points at.
 	Rune rune
-	// The position in the buffer.
+	// The length of the current rune in bytes.
+	size int
+
+	// The start position of the current rune.
 	position int
+	// The row and column of the current rune, NOT in bytes!
+	row, column int
 }
 
 func (c *Cursor) String() string {
@@ -32,19 +37,6 @@ func (s *state) Ok(last *Cursor) {
 	// We jump to the given cursor (last parsed rune) because it is not
 	// guaranteed that the already parser did not pass it.
 	s.p.Jump(last).Next()
-}
-
-// Fail resets the parser to the start an returns the parsed string between the
-// start and last. If next it also includes the next in the result.
-func (s *state) Fail(start, last *Cursor, next bool) string {
-	if last == nil {
-		last = start // To prevent nil errors.
-	} else if next {
-		// Get the mark after the last matching rune.
-		last = s.p.Jump(last).Peek()
-	}
-	s.p.Jump(start) // Reset parser.
-	return s.p.Slice(start, last)
 }
 
 // End returns a mark to the last successfully parsed rune.

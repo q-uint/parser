@@ -19,7 +19,7 @@ func ExampleParser_Expect_rune() {
 	fmt.Println(p.Expect('a'))
 	// Output:
 	// <nil> <nil>
-	// <nil> parse: expected int32 100 but got "a"
+	// <nil> parse conflict [00:001]: expected int32 'd' but got 'a'
 	// <nil> <nil>
 	// <nil> <nil>
 	// <nil> <nil>
@@ -34,7 +34,7 @@ func ExampleParser_Expect_string() {
 	fmt.Println(p.Expect("data"))
 	// Output:
 	// <nil> <nil>
-	// <nil> parse: expected int32 95 but got " "
+	// <nil> parse conflict [00:004]: expected int32 '_' but got ' '
 	// <nil> <nil>
 }
 
@@ -119,7 +119,7 @@ func ExampleParser_Expect_not() {
 	})
 	fmt.Println(err)
 	// Output:
-	// parse: expected op.Not {bar} but got "bar"
+	// parse conflict [00:003]: expected op.Not {bar} but got "bar"
 	// <nil>
 }
 
@@ -181,7 +181,7 @@ func ExampleParser_Expect_or() {
 	// Output:
 	// [000] d <nil>
 	// [000] at <nil>
-	// <nil> parse: expected op.Or [{0 100 <nil>} {0 116 <nil>} {{0 97 <nil>}}] but got "a"
+	// <nil> parse conflict [00:004]: expected op.Or [{0 100 <nil>} {0 116 <nil>} {{0 97 <nil>}}] but got 'a'
 }
 
 func TestParser_Expect_and_or(t *testing.T) {
@@ -233,8 +233,8 @@ func ExampleParser_Expect_xor() {
 	fmt.Println(p.Expect(op.XOr{d, da, data}))
 	fmt.Println(p.Expect(op.XOr{a, t}))
 	// Output:
-	// <nil> parse: expected op.XOr [{0 100 <nil>} {0 da <nil>} {0 data <nil>}] but got "da"
-	// <nil> parse: expected op.XOr [{0 97 <nil>} {0 116 <nil>}] but got "d"
+	// <nil> parse conflict [00:001]: expected op.XOr [{0 100 <nil>} {0 da <nil>} {0 data <nil>}] but got "da"
+	// <nil> parse conflict [00:000]: expected op.XOr [{0 97 <nil>} {0 116 <nil>}] but got 'd'
 }
 
 func ExampleParser_Expect_range() {
@@ -247,5 +247,5 @@ func ExampleParser_Expect_range() {
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
 	// Output:
 	// [000] aaa <nil>
-	// <nil> parse: expected op.Range {4 -1 97} but got "aaa"
+	// <nil> parse conflict [00:003]: expected op.Range {4 -1 97} but got "aaa"
 }

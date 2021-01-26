@@ -115,9 +115,7 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 		defer p.Jump(start)
 		if _, err := ap.Expect(v.Value); err == nil {
 			// Return error if match is found.
-			return nil, &parser.ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, p.LookBack()),
-			}
+			return nil, p.ExpectedParseError(v, start, p.LookBack())
 		}
 	case op.Ensure:
 		if n, err := ap.Expect(v.Value); err != nil {
@@ -161,9 +159,7 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			p.Jump(start)
 		}
 		if !hit {
-			return nil, &parser.ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, p.Mark()),
-			}
+			return nil, p.ExpectedParseError(v, start, p.Peek())
 		}
 	case op.XOr:
 		var (
@@ -178,19 +174,13 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			}
 			if last != nil {
 				// We already got a match.
-				p.Jump(start)
-				return nil, &parser.ExpectedParseError{
-					Expected: v, Actual: p.Slice(start, last),
-				}
+				return nil, p.ExpectedParseError(v, start, last)
 			}
 			last = p.Mark()
 			node = n
 		}
 		if last == nil {
-			p.Jump(start)
-			return nil, &parser.ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, p.Mark()),
-			}
+			return nil, p.ExpectedParseError(v, start, start)
 		}
 		if node != nil {
 			return node, nil
@@ -224,10 +214,10 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			}
 		}
 		if count < v.Min {
-			p.Jump(start)
-			return nil, &parser.ExpectedParseError{
-				Expected: v, Actual: p.Slice(start, last),
+			if last == nil {
+				last = start
 			}
+			return nil, p.ExpectedParseError(v, start, p.Jump(last).Peek())
 		}
 
 		if node.IsParent() {

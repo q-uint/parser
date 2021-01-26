@@ -14,7 +14,7 @@ func ExampleNot() {
 	_, err = p.Expect(op.Not{Value: "baz"})
 	fmt.Println(err)
 	// Output:
-	// parse: expected op.Not {bar} but got "bar"
+	// parse conflict [00:002]: expected op.Not {bar} but got "bar"
 	// <nil>
 }
 
@@ -26,7 +26,7 @@ func ExampleEnsure() {
 	fmt.Println(p.Expect("bar"))
 	// Output:
 	// <nil> <nil>
-	// <nil> parse: expected string baz but got "bar"
+	// <nil> parse conflict [00:002]: expected string "baz" but got "bar"
 	// U+0072 r <nil>
 }
 
@@ -38,7 +38,7 @@ func ExampleAnd() {
 	_, err = p.Expect(op.And{"foo", ' ', "bar", ' ', "baz"})
 	fmt.Println(err)
 	// Output:
-	// parse: expected op.And [foo 32 bar 95] but got "foo bar "
+	// parse conflict [00:007]: expected op.And [foo 32 bar 95] but got "foo bar "
 	// <nil>
 }
 
@@ -54,7 +54,7 @@ func ExampleOr() {
 	// Output:
 	// U+0064: d
 	// U+0074: t
-	// parse: expected op.Or [100 116 {97}] but got "a"
+	// parse conflict [00:003]: expected op.Or [100 116 {97}] but got 'a'
 }
 
 func ExampleXOr() {
@@ -65,6 +65,6 @@ func ExampleXOr() {
 	_, err = p.Expect(op.XOr{'a', 't'})
 	fmt.Println(err)
 	// Output:
-	// parse: expected op.XOr [100 da data] but got "da"
-	// parse: expected op.XOr [97 116] but got "d"
+	// parse conflict [00:001]: expected op.XOr [100 da data] but got "da"
+	// parse conflict [00:000]: expected op.XOr [97 116] but got 'd'
 }

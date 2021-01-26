@@ -23,17 +23,53 @@ func (e *ExpectError) Error() string {
 	return fmt.Sprintf("expect: %s", e.Message)
 }
 
+// ExpectedParseError creates an ExpectedParseError error based on the given
+// start and end cursor. Resets the parser tot the start cursor.
+func (p *Parser) ExpectedParseError(expected interface{}, start, end *Cursor) *ExpectedParseError {
+	if end == nil {
+		end = start
+	}
+	defer p.Jump(start)
+	return &ExpectedParseError{
+		Expected: expected,
+		String:   p.Slice(start, end),
+		Conflict: *end,
+	}
+}
+
 // ExpectedParseError indicates that the parser Expected a different value than
 // the Actual value present in the buffer.
 type ExpectedParseError struct {
 	// The value that was expected.
 	Expected interface{}
 	// The value it actually got.
-	Actual string
+	String string
+	// The position of the conflicting value.
+	Conflict Cursor
 }
 
 func (e *ExpectedParseError) Error() string {
-	return fmt.Sprintf("parse: expected %T %v but got %q", e.Expected, e.Expected, e.Actual)
+	var expected string
+	switch v := e.Expected.(type) {
+	case rune:
+		expected = fmt.Sprintf("'%s'", string(v))
+	case string:
+		expected = fmt.Sprintf("%q", v)
+	default:
+		expected = fmt.Sprintf("%v", v)
+	}
+
+	got := e.String
+	if len(e.String) == 1 {
+		got = fmt.Sprintf("'%s'", string([]rune(e.String)[0]))
+	} else {
+		got = fmt.Sprintf("%q", e.String)
+	}
+
+	return fmt.Sprintf(
+		"parse conflict [%02d:%03d]: expected %T %s but got %s",
+		e.Conflict.row, e.Conflict.column, e.Expected, expected, got,
+	)
 }
 
 // UnsupportedType indicates the type of the value is unsupported.

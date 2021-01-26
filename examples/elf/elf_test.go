@@ -17,9 +17,9 @@ func ExampleParse_invalid() {
 	})
 	// This will fail since ast uses utf8.DecodeRune to decode runes.
 	_, err := elf.Header(p)
-	fmt.Printf("0x%x", err.(*parser.ExpectedParseError).Actual)
+	fmt.Printf("0x%x", err.(*parser.ExpectedParseError).String)
 	// Output:
-	// 0xff
+	// 0xffff
 }
 
 func ExampleParse() {

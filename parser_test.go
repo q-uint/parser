@@ -90,7 +90,7 @@ func ExampleParser_Expect_rune() {
 	fmt.Println(p.Next().Done())
 	// Output:
 	// U+0064: d
-	// parse: expected int32 100 but got "a"
+	// parse conflict [00:001]: expected int32 'd' but got 'a'
 	// U+0061: a
 	// U+0074: t
 	// U+0061: a
@@ -122,8 +122,8 @@ func TestParser_Expect_string_err(t *testing.T) {
 	}
 
 	expected := err.(*parser.ExpectedParseError)
-	if expected.Actual != "bar" {
-		t.Error(expected.Actual)
+	if expected.String != "bar" {
+		t.Error(expected.String)
 	}
 }
 
@@ -236,7 +236,7 @@ func TestParser_Expect_class_err(t *testing.T) {
 	}
 
 	expected := err.(*parser.ExpectedParseError)
-	if expected.Actual != "bar" {
-		t.Error(expected.Actual)
+	if expected.String != "bar" {
+		t.Error(expected.String)
 	}
 }
