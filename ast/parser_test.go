@@ -256,8 +256,8 @@ func ExampleParser_Expect_xor() {
 			TypeStrings: types,
 			Value:       "data",
 		}
-		a    = ast.Capture{Value: 'a'}
-		t    = ast.Capture{Value: 't'}
+		a = ast.Capture{Value: 'a'}
+		t = ast.Capture{Value: 't'}
 	)
 
 	fmt.Println(p.Expect(op.XOr{d, da, data}))

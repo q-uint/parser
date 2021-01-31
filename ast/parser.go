@@ -90,14 +90,17 @@ func (ap *Parser) Expect(i interface{}) (*Node, error) {
 			if node.Type == -1 {
 				node.Type = v.Type
 			}
+			if len(node.TypeStrings) == 0 {
+				node.TypeStrings = v.TypeStrings
+			}
 			return node, nil
 		}
 
 		if v.Convert != nil {
 			return &Node{
-				Type:  v.Type,
+				Type:        v.Type,
 				TypeStrings: v.TypeStrings,
-				Value: v.Convert(p.Slice(start, p.LookBack())),
+				Value:       v.Convert(p.Slice(start, p.LookBack())),
 			}, nil
 		}
 		return &Node{
