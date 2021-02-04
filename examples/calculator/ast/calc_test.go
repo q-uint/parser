@@ -13,11 +13,11 @@ func ExampleParse() {
 	fmt.Println(calc.Parse("1 + 1 * (1 + 1)"))
 	fmt.Println(calc.Parse("(1 + 1) * (1 + 1)"))
 	// Output:
-	// [001] [[002] [[005] 1], [003] 43, [002] [[005] 1]] <nil>
-	// [001] [[002] [[005] 1], [003] 43, [002] [[005] 1, [004] 42, [005] 1]] <nil>
-	// [001] [[002] [[005] 1], [003] 43, [002] [[005] 1, [004] 42, [005] 1], [003] 43, [002] [[005] 1]] <nil>
-	// [001] [[002] [[005] 1], [003] 43, [002] [[005] 1, [004] 42, [001] [[002] [[005] 1], [003] 43, [002] [[005] 1]]]] <nil>
-	// [001] [[002] [[001] [[002] [[005] 1], [003] 43, [002] [[005] 1]], [004] 42, [001] [[002] [[005] 1], [003] 43, [002] [[005] 1]]]] <nil>
+	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"]]] <nil>
+	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"],["MulDiv","42"],["Integer","1"]]] <nil>
+	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"],["MulDiv","42"],["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"]]] <nil>
+	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"],["MulDiv","42"],["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"]]]]] <nil>
+	// ["AddSubExpr",["MulDivExpr",["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"]]],["MulDiv","42"],["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","43"],["MulDivExpr",["Integer","1"]]]]] <nil>
 }
 
 func ExampleEvaluate() {
@@ -44,8 +44,8 @@ func ExampleInteger() {
 	fmt.Println(p("007").Expect(calc.MulDiv))
 	fmt.Println(p("007").Expect(calc.AddSub))
 	// Output:
-	// [005] 7 <nil>
-	// [005] 7 <nil>
-	// [002] [[005] 7] <nil>
-	// [001] [[002] [[005] 7]] <nil>
+	// ["Integer","7"] <nil>
+	// ["Integer","7"] <nil>
+	// ["MulDivExpr",["Integer","7"]] <nil>
+	// ["AddSubExpr",["MulDivExpr",["Integer","7"]]] <nil>
 }

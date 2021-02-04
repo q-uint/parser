@@ -1,34 +1,7 @@
 package ast
 
-import (
-	"fmt"
-	"strings"
-)
-
 // ParseNode represents a function to parse ast nodes.
 type ParseNode func(p *Parser) (*Node, error)
-
-// Capture is a structure to indicate that the value should be converted to a
-// node. If one of the children returns a node, then that node gets returned
-type Capture struct {
-	// Type of the node.
-	Type int
-	// TypeStrings contains all the string representations of the available types.
-	TypeStrings []string
-	// Value is the expression to capture the value of the node.
-	Value interface{}
-
-	// Convert is an optional functions to change the type of the parsed value.
-	// e.g. convert "1" to an integer instead of the string itself.
-	Convert func(i string) interface{}
-}
-
-func (c Capture) String() string {
-	if 0 <= c.Type && c.Type < len(c.TypeStrings) {
-		return fmt.Sprintf("%s", c.TypeStrings[c.Type])
-	}
-	return fmt.Sprintf("{%03d}", c.Type)
-}
 
 // Node is a simple node in a tree with double linked lists instead of slices to
 // keep track of its siblings and children. A node is either a value or a
@@ -53,27 +26,21 @@ type Node struct {
 	LastChild *Node
 }
 
-// ValueString casts the value to a string.
-func (n *Node) ValueString() string {
-	return n.Value.(string)
+// TypeString returns the strings representation of the type. Same as TypeStrings[Type]. Returns "UNKNOWN" if not
+// string representation is found or len(TypeStrings) == 0.
+func (n *Node) TypeString() string {
+	if 0 <= n.Type && n.Type < len(n.TypeStrings) {
+		return n.TypeStrings[n.Type]
+	}
+	return "UNKNOWN"
 }
 
-func (n *Node) String() string {
-	var prefix string
-	if 0 <= n.Type && n.Type < len(n.TypeStrings) {
-		prefix = fmt.Sprintf("[%s]", n.TypeStrings[n.Type])
-	} else {
-		prefix = fmt.Sprintf("[%03d]", n.Type)
+// ValueString casts the value to a string.
+func (n *Node) ValueString() string {
+	if s, ok := n.Value.(string); ok {
+		return s
 	}
-
-	if n.IsParent() {
-		var children []string
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			children = append(children, c.String())
-		}
-		return fmt.Sprintf("%s [%v]", prefix, strings.Join(children, ", "))
-	}
-	return fmt.Sprintf("%s %v", prefix, n.Value)
+	return ""
 }
 
 // IsParent returns whether the node has children and thus is not a value node.

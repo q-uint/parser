@@ -7,7 +7,8 @@ import (
 
 func Plus(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: 1,
+		Type:        1,
+		TypeStrings: types,
 		Value: op.And{
 			Mult,
 			op.MinZero(op.And{
@@ -22,7 +23,8 @@ func Plus(p *ast.Parser) (*ast.Node, error) {
 
 func Mult(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: 2,
+		Type:        2,
+		TypeStrings: types,
 		Value: op.And{
 			Rule,
 			op.MinZero(op.And{
@@ -46,4 +48,10 @@ func Rule(p *ast.Parser) (*ast.Node, error) {
 			')',
 		},
 	})
+}
+
+var types = []string{
+	"Value",
+	"Plus",
+	"Mult",
 }

@@ -6,9 +6,16 @@ import (
 )
 
 func Infinite(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(ast.Capture{Value: op.Or{And, Value}})
+	return p.Expect(ast.Capture{
+		TypeStrings: []string{"Infinite"},
+		Value:       op.Or{AndInf, Value},
+	})
 }
 
-func And(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(op.And{Infinite, op.MinZero(SP), '+', op.MinZero(SP), Infinite})
+func AndInf(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(op.And{
+		Infinite,
+		op.MinZero(SP), '+', op.MinZero(SP),
+		Infinite,
+	})
 }

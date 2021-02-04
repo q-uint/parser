@@ -10,10 +10,11 @@ import (
 func ExampleCircular() {
 	p, _ := ast.New([]byte("00001"))
 	fmt.Println(p.Expect(ast.Capture{
-		Value: circular.Circular,
+		TypeStrings: []string{"Number"},
+		Value:       circular.Circular,
 	}))
 	// Output:
-	// [000] 00001 <nil>
+	// ["Number","00001"] <nil>
 }
 
 func ExampleCircular_function() {
@@ -30,10 +31,11 @@ func ExampleCircular_function() {
 
 	p, _ := ast.New([]byte("00001"))
 	fmt.Println(p.Expect(ast.Capture{
-		Value: circularFunc,
+		TypeStrings: []string{"Circular"},
+		Value:       circularFunc,
 	}))
 	// Output:
-	// [000] 00001 <nil>
+	// ["Circular","00001"] <nil>
 }
 
 func ExampleParse() {
@@ -41,7 +43,7 @@ func ExampleParse() {
 	fmt.Println(circular.Parse("01001"))
 	fmt.Println(circular.Parse("00100"))
 	// Output:
-	// [000] 00001 <nil>
-	// [000] 01 <nil>
-	// [000] 001 <nil>
+	// ["Circular","00001"] <nil>
+	// ["Circular","01"] <nil>
+	// ["Circular","001"] <nil>
 }

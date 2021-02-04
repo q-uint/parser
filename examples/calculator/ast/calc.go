@@ -56,8 +56,9 @@ func AddSub(p *ast.Parser) (*ast.Node, error) {
 	return operator(p,
 		1, MulDiv,
 		ast.Capture{
-			Type:  3,
-			Value: op.Or{'+', '-'},
+			Type:        3,
+			TypeStrings: types,
+			Value:       op.Or{'+', '-'},
 			Convert: func(i string) interface{} {
 				return rune(i[0])
 			},
@@ -69,8 +70,9 @@ func MulDiv(p *ast.Parser) (*ast.Node, error) {
 	return operator(p,
 		2, Factor,
 		ast.Capture{
-			Type:  4,
-			Value: op.Or{'*', '/'},
+			Type:        4,
+			TypeStrings: types,
+			Value:       op.Or{'*', '/'},
 			Convert: func(i string) interface{} {
 				return rune(i[0])
 			},
@@ -80,7 +82,8 @@ func MulDiv(p *ast.Parser) (*ast.Node, error) {
 
 func operator(p *ast.Parser, typ int, f func(p *ast.Parser) (*ast.Node, error), or ast.Capture) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ,
+		Type:        typ,
+		TypeStrings: types,
 		Value: op.And{
 			f,
 			op.MinZero(op.And{
@@ -99,7 +102,8 @@ func Factor(p *ast.Parser) (*ast.Node, error) {
 
 func Integer(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: 5,
+		Type:        5,
+		TypeStrings: types,
 		Value: op.MinOne(
 			parser.CheckRuneFunc(func(r rune) bool {
 				return '0' <= r && r <= '9'
@@ -115,4 +119,14 @@ func Integer(p *ast.Parser) (*ast.Node, error) {
 // Space consumes all the spaces.
 func Space(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(op.MinZero(' '))
+}
+
+var types = []string{
+	"UNKNOWN",
+
+	"AddSubExpr",
+	"MulDivExpr",
+	"AddSub",
+	"MulDiv",
+	"Integer",
 }

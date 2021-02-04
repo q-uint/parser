@@ -71,6 +71,7 @@ func ExampleParser_Expect_parse_node() {
 	p, _ := ast.New([]byte("1 <= 2"))
 	fmt.Println(p.Expect(func(p *ast.Parser) (*ast.Node, error) {
 		digit := ast.Capture{
+			TypeStrings: []string{"Digit"},
 			Value: parser.CheckRuneFunc(func(r rune) bool {
 				return '0' <= r && r <= '9'
 			}),
@@ -82,12 +83,13 @@ func ExampleParser_Expect_parse_node() {
 		return p.Expect(op.And{digit, parser.CheckString(" <= "), digit})
 	}))
 	// Output:
-	// [-01] [[000] 1, [000] 2] <nil>
+	// ["UNKNOWN",["Digit","1"],["Digit","2"]] <nil>
 }
 
 func ExampleParser_Expect_capture() {
 	p, _ := ast.New([]byte("1 <= 2"))
 	digit := ast.Capture{
+		TypeStrings: []string{"Digit"},
 		Value: parser.CheckRuneFunc(func(r rune) bool {
 			return '0' <= r && r <= '9'
 		}),
@@ -102,9 +104,9 @@ func ExampleParser_Expect_capture() {
 	fmt.Println(p.Expect(lt))
 	fmt.Println(p.Expect(digit))
 	// Output:
-	// [000] 1 <nil>
+	// ["Digit","1"] <nil>
 	// <nil> <nil>
-	// [000] 2 <nil>
+	// ["Digit","2"] <nil>
 }
 
 func ExampleParser_Expect_not() {
@@ -147,7 +149,7 @@ func TestParser_Expect_not(t *testing.T) {
 func ExampleParser_Expect_and() {
 	p, _ := ast.New([]byte("1 <= 2"))
 	digit := ast.Capture{
-		Type: 1,
+		TypeStrings: []string{"Digit"},
 		Value: parser.CheckRuneFunc(func(r rune) bool {
 			return '0' <= r && r <= '9'
 		}),
@@ -157,7 +159,7 @@ func ExampleParser_Expect_and() {
 		digit, parser.CheckString(" <= "), digit,
 	}))
 	// Output:
-	// [-01] [[001] 1, [001] 2] <nil>
+	// ["UNKNOWN",["Digit","1"],["Digit","2"]] <nil>
 }
 
 func ExampleParser_Expect_or() {
@@ -193,8 +195,8 @@ func ExampleParser_Expect_or() {
 	fmt.Println(p.Expect(op.Or{at, a, ata}))
 	fmt.Println(p.Expect(op.Or{d, t, op.Not{Value: a}}))
 	// Output:
-	// [d] d <nil>
-	// [000] at <nil>
+	// ["d","d"] <nil>
+	// ["UNKNOWN","at"] <nil>
 	// <nil> parse conflict [00:004]: expected op.Or or[d {000} !{000}] but got 'a'
 }
 
@@ -270,12 +272,13 @@ func ExampleParser_Expect_xor() {
 func ExampleParser_Expect_range() {
 	p, _ := ast.New([]byte("aaa"))
 	fmt.Println(p.Expect(ast.Capture{
-		Value: op.Min(3, 'a'),
+		TypeStrings: []string{"3A"},
+		Value:       op.Min(3, 'a'),
 	})) // 3 * 'a'
 
 	p, _ = ast.New([]byte("aaa"))
 	fmt.Println(p.Expect(op.Min(4, 'a'))) // err
 	// Output:
-	// [000] aaa <nil>
+	// ["3A","aaa"] <nil>
 	// <nil> parse conflict [00:003]: expected op.Range 'a'{4:-1} but got "aaa"
 }

@@ -7,7 +7,10 @@ import (
 
 func ExampleFinite() {
 	p, _ := ast.New([]byte("0+1 + 10"))
-	fmt.Println(p.Expect(ast.Capture{Value: Finite}))
+	fmt.Println(p.Expect(ast.Capture{
+		TypeStrings: []string{"Finite"},
+		Value:       Finite,
+	}))
 	// Output:
-	// [000] [[000] 0, [000] 1, [000] 10] <nil>
+	// ["Finite",["Value","0"],["Value","1"],["Value","10"]] <nil>
 }

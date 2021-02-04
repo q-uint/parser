@@ -23,7 +23,8 @@ func Parse(input string) (*ast.Node, error) {
 		return nil, err
 	}
 	return p.Expect(ast.Capture{
-		Value: table["circular"],
+		TypeStrings: []string{"Circular"},
+		Value:       table["circular"],
 	})
 }
 
