@@ -12,5 +12,5 @@ func ExampleFinite() {
 		Value:       Finite,
 	}))
 	// Output:
-	// ["Finite",["Value","0"],["Value","1"],["Value","10"]] <nil>
+	// ["Finite",[["Value","0"],["Value","1"],["Value","10"]]] <nil>
 }

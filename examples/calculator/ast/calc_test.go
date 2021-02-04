@@ -13,11 +13,11 @@ func ExampleParse() {
 	fmt.Println(calc.Parse("1 + 1 * (1 + 1)"))
 	fmt.Println(calc.Parse("(1 + 1) * (1 + 1)"))
 	// Output:
-	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"]]] <nil>
-	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"],["MulDiv","*"],["Integer","1"]]] <nil>
-	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"],["MulDiv","*"],["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"]]] <nil>
-	// ["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"],["MulDiv","*"],["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"]]]]] <nil>
-	// ["AddSubExpr",["MulDivExpr",["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"]]],["MulDiv","*"],["AddSubExpr",["MulDivExpr",["Integer","1"]],["AddSub","+"],["MulDivExpr",["Integer","1"]]]]] <nil>
+	// ["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"]]]]] <nil>
+	// ["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"],["MulDiv","*"],["Integer","1"]]]]] <nil>
+	// ["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"],["MulDiv","*"],["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"]]]]] <nil>
+	// ["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"],["MulDiv","*"],["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"]]]]]]]]] <nil>
+	// ["AddSubExpr",[["MulDivExpr",[["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"]]]]],["MulDiv","*"],["AddSubExpr",[["MulDivExpr",[["Integer","1"]]],["AddSub","+"],["MulDivExpr",[["Integer","1"]]]]]]]]] <nil>
 }
 
 func ExampleEvaluate() {
@@ -46,6 +46,6 @@ func ExampleInteger() {
 	// Output:
 	// ["Integer","007"] <nil>
 	// ["Integer","007"] <nil>
-	// ["MulDivExpr",["Integer","007"]] <nil>
-	// ["AddSubExpr",["MulDivExpr",["Integer","007"]]] <nil>
+	// ["MulDivExpr",[["Integer","007"]]] <nil>
+	// ["AddSubExpr",[["MulDivExpr",[["Integer","007"]]]]] <nil>
 }

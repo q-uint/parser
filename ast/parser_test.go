@@ -78,7 +78,7 @@ func ExampleParser_Expect_parse_node() {
 		return p.Expect(op.And{digit, parser.CheckString(" <= "), digit})
 	}))
 	// Output:
-	// ["UNKNOWN",["Digit","1"],["Digit","2"]] <nil>
+	// ["UNKNOWN",[["Digit","1"],["Digit","2"]]] <nil>
 }
 
 func ExampleParser_Expect_capture() {
@@ -150,7 +150,7 @@ func ExampleParser_Expect_and() {
 		digit, parser.CheckString(" <= "), digit,
 	}))
 	// Output:
-	// ["UNKNOWN",["Digit","1"],["Digit","2"]] <nil>
+	// ["UNKNOWN",[["Digit","1"],["Digit","2"]]] <nil>
 }
 
 func ExampleParser_Expect_or() {

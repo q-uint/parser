@@ -22,5 +22,13 @@ func ExampleNode_MarshalJSONString() {
 	})
 	fmt.Println(n.MarshalJSONString())
 	// Output:
-	// [-1,[0,"a"],[0,"a"],[0,"a"],[0,"a"],[0,"a"],[1,"\n"]] <nil>
+	// [-1,[[0,"a"],[0,"a"],[0,"a"],[0,"a"],[0,"a"],[1,"\n"]]] <nil>
+}
+
+func ExampleNode_UnmarshalJSON() {
+	node := Node{TypeStrings: []string{"A", "NL"}}
+	_ = node.UnmarshalJSON([]byte("[-1,[[0,\"a\"],[0,\"a\"],[0,\"a\"],[0,\"a\"],[0,\"a\"],[1,\"\\n\"]]]"))
+	fmt.Println(node.MarshalJSONString())
+	// Output:
+	// [-1,[[0,"a"],[0,"a"],[0,"a"],[0,"a"],[0,"a"],[1,"\\n"]]] <nil>
 }

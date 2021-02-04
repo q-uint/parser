@@ -14,7 +14,7 @@ func Example() {
 	fmt.Println(Plus(p("5 + 2")))
 	fmt.Println(Plus(p("5 + 2 * 0")))
 	// Output:
-	// ["Plus",["Mult",["Value","5"]]] <nil>
-	// ["Plus",["Mult",["Value","5"]],["Mult",["Value","2"]]] <nil>
-	// ["Plus",["Mult",["Value","5"]],["Mult",["Value","2"],["Value","0"]]] <nil>
+	// ["Plus",[["Mult",[["Value","5"]]]]] <nil>
+	// ["Plus",[["Mult",[["Value","5"]]],["Mult",[["Value","2"]]]]] <nil>
+	// ["Plus",[["Mult",[["Value","5"]]],["Mult",[["Value","2"],["Value","0"]]]]] <nil>
 }
