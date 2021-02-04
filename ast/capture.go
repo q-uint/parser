@@ -11,10 +11,6 @@ type Capture struct {
 	TypeStrings []string
 	// Value is the expression to capture the value of the node.
 	Value interface{}
-
-	// Convert is an optional functions to change the type of the parsed value.
-	// e.g. convert "1" to an integer instead of the string itself.
-	Convert func(i string) interface{}
 }
 
 func (c Capture) String() string {

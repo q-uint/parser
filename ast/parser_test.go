@@ -5,7 +5,6 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	"strconv"
 	"testing"
 )
 
@@ -75,10 +74,6 @@ func ExampleParser_Expect_parse_node() {
 			Value: parser.CheckRuneFunc(func(r rune) bool {
 				return '0' <= r && r <= '9'
 			}),
-			Convert: func(i string) interface{} {
-				v, _ := strconv.Atoi(i)
-				return v
-			},
 		}
 		return p.Expect(op.And{digit, parser.CheckString(" <= "), digit})
 	}))
@@ -93,10 +88,6 @@ func ExampleParser_Expect_capture() {
 		Value: parser.CheckRuneFunc(func(r rune) bool {
 			return '0' <= r && r <= '9'
 		}),
-		Convert: func(i string) interface{} {
-			v, _ := strconv.Atoi(i)
-			return v
-		},
 	}
 	lt := parser.CheckString(" <= ")
 
@@ -230,7 +221,7 @@ func TestParser_Expect_and_or(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if node.ValueString() != "u10FFFF" {
+	if node.Value != "u10FFFF" {
 		t.Error(node)
 	}
 }

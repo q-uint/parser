@@ -6,10 +6,7 @@ import (
 
 func (n *Node) String() string {
 	if !n.IsParent() {
-		if s, ok := n.Value.(string); ok {
-			return fmt.Sprintf("[%q,%q]", n.TypeString(), s)
-		}
-		return fmt.Sprintf("[%q,\"%v\"]", n.TypeString(), n.Value)
+		return fmt.Sprintf("[%q,%q]", n.TypeString(), n.Value)
 	}
 	jsonString := fmt.Sprintf("[%q,", n.TypeString())
 	for idx, child := range n.Children() {
@@ -29,12 +26,9 @@ func (n *Node) MarshalJSON() ([]byte, error) {
 
 func (n *Node) MarshalJSONString() (string, error) {
 	if !n.IsParent() {
-		if s, ok := n.Value.(string); ok {
-			return fmt.Sprintf("[%d,%q]", n.Type, s), nil
-		}
-		return fmt.Sprintf("[%d,\"%v\"]", n.Type, n.Value), nil
+		return fmt.Sprintf("[%d,%q]", n.Type, n.Value), nil
 	}
-	jsonString := "["
+	jsonString := fmt.Sprintf("[%d,", n.Type)
 	for idx, child := range n.Children() {
 		if idx != 0 {
 			jsonString += ","

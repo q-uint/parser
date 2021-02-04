@@ -30,7 +30,7 @@ func EvaluateNode(n *ast.Node) int {
 		var sign rune
 		for _, c := range n.Children() {
 			if c.Type == 3 || c.Type == 4 {
-				sign = c.Value.(rune)
+				sign = []rune(c.Value)[0]
 			} else {
 				switch sign {
 				case '+':
@@ -47,7 +47,8 @@ func EvaluateNode(n *ast.Node) int {
 			}
 		}
 	case 5:
-		return n.Value.(int)
+		i, _ := strconv.Atoi(n.Value)
+		return i
 	}
 	return value
 }
@@ -59,9 +60,6 @@ func AddSub(p *ast.Parser) (*ast.Node, error) {
 			Type:        3,
 			TypeStrings: types,
 			Value:       op.Or{'+', '-'},
-			Convert: func(i string) interface{} {
-				return rune(i[0])
-			},
 		},
 	)
 }
@@ -73,9 +71,6 @@ func MulDiv(p *ast.Parser) (*ast.Node, error) {
 			Type:        4,
 			TypeStrings: types,
 			Value:       op.Or{'*', '/'},
-			Convert: func(i string) interface{} {
-				return rune(i[0])
-			},
 		},
 	)
 }
@@ -109,10 +104,6 @@ func Integer(p *ast.Parser) (*ast.Node, error) {
 				return '0' <= r && r <= '9'
 			}),
 		),
-		Convert: func(i string) interface{} {
-			v, _ := strconv.Atoi(i)
-			return v
-		},
 	})
 }
 

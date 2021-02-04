@@ -12,7 +12,7 @@ type Node struct {
 	// TypeStrings contains all the string representations of the available types.
 	TypeStrings []string
 	// Value of the node. Only possible if it has no children.
-	Value interface{}
+	Value string
 
 	// Parent is the parent node.
 	Parent *Node
@@ -33,14 +33,6 @@ func (n *Node) TypeString() string {
 		return n.TypeStrings[n.Type]
 	}
 	return "UNKNOWN"
-}
-
-// ValueString casts the value to a string.
-func (n *Node) ValueString() string {
-	if s, ok := n.Value.(string); ok {
-		return s
-	}
-	return ""
 }
 
 // IsParent returns whether the node has children and thus is not a value node.

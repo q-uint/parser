@@ -22,5 +22,5 @@ func ExampleNode_MarshalJSONString() {
 	})
 	fmt.Println(n.MarshalJSONString())
 	// Output:
-	// [[0,"a"],[0,"a"],[0,"a"],[0,"a"],[0,"a"],[1,"\n"]] <nil>
+	// [-1,[0,"a"],[0,"a"],[0,"a"],[0,"a"],[0,"a"],[1,"\n"]] <nil>
 }
