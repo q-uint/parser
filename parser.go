@@ -320,6 +320,9 @@ func (p *Parser) Check(i interface{}) (*Cursor, bool) {
 
 // ConvertAliases converts various default primitive types to aliases for type
 // matching.
+//
+// - (int, rune)
+// - ([]interface{}, op.And)
 func ConvertAliases(i interface{}) interface{} {
 	switch v := i.(type) {
 	case int:
