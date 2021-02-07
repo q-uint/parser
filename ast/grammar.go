@@ -1,5 +1,3 @@
-// Do not edit. This file is auto-generated.
-// Grammar: PEGN-AST (v0.1.0) github.com/di-wu/parser/ast
 package ast
 
 import (
