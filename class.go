@@ -1,10 +1,78 @@
 package parser
 
+import (
+	"github.com/di-wu/parser/op"
+	"strconv"
+	"strings"
+)
+
 // AnonymousClass represents an anonymous Class.Check function.
 //
 // The cursor should never be nil except if it fails at the first rune.
 // e.g. "121".Check("123") should return a mark to the 2nd value.
 type AnonymousClass func(p *Parser) (*Cursor, bool)
+
+// CheckInteger returns an AnonymousClass that checks whether the following
+// runes are equal to the given integer. It also consumes leading zeros
+// when indicated to do so.
+func CheckInteger(i int, leadingZeros bool) AnonymousClass {
+	// Edge case: i == 0.
+	if i == 0 {
+		// Consume all zeroes if leadingZeros == true.
+		if leadingZeros {
+			return func(p *Parser) (*Cursor, bool) {
+				return p.Check(op.MinOne('0'))
+			}
+		}
+		return func(p *Parser) (*Cursor, bool) {
+			return p.Check('0')
+		}
+	}
+
+	var and op.And
+	str := strconv.Itoa(i)
+	// Negative integers.
+	if i < 0 {
+		and = append(and, '-')
+		str = strings.TrimPrefix(str, "-")
+	}
+	// Leading zeroes.
+	if leadingZeros {
+		// Consume all leading zeros.
+		and = append(and, op.MinZero('0'))
+	}
+	return func(p *Parser) (*Cursor, bool) {
+		return p.Check(append(and, str))
+	}
+}
+
+// CheckIntegerRange returns an AnonymousClass that checks whether the following
+// runes are inside the given range (inclusive). It also consumes leading zeros
+// when indicated to do so.
+//
+// Note that this check consumes all the sequential numbers it possibly can.
+// e.g. "12543" is not in the range (0, 12345), even the prefix "1254" is.
+func CheckIntegerRange(min, max uint, leadingZeros bool) AnonymousClass {
+	return func(p *Parser) (*Cursor, bool) {
+		digit := CheckRuneRange('0', '9')
+		check := CheckRuneRange('1', '9')
+		if leadingZeros {
+			check = digit
+		}
+
+		var last *Cursor
+		var str string
+		for r, ok := p.Check(check); ok; r, ok = p.Check(digit) {
+			str += string(r.Rune)
+			last = r
+		}
+		i, _ := strconv.Atoi(str)
+		if i := uint(i); min <= i && i <= max {
+			return last, true
+		}
+		return nil, false
+	}
+}
 
 // CheckRune returns an AnonymousClass that checks whether the current rune of
 // the parser matches the given rune. The same result can be achieved by using

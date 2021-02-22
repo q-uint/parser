@@ -3,7 +3,55 @@ package parser_test
 import (
 	"fmt"
 	"github.com/di-wu/parser"
+	"strconv"
+	"testing"
 )
+
+func ExampleCheckInteger() {
+	p, _ := parser.New([]byte("-0001 something else"))
+	fmt.Println(p.Check(parser.CheckInteger(-1, false)))
+	fmt.Println(p.Check(parser.CheckInteger(-1, true)))
+	// Output:
+	// <nil> false
+	// U+0031: 1 true
+}
+
+func ExampleCheckIntegerRange() {
+	p, _ := parser.New([]byte("12445"))
+	fmt.Println(p.Check(parser.CheckIntegerRange(12, 12345, false)))
+	fmt.Println(p.Check(parser.CheckIntegerRange(10000, 54321, false)))
+
+	p0, _ := parser.New([]byte("00012"))
+	fmt.Println(p0.Check(parser.CheckIntegerRange(12, 12345, false)))
+	fmt.Println(p0.Check(parser.CheckIntegerRange(12, 12345, true)))
+	// Output:
+	// <nil> false
+	// U+0035: 5 true
+	// <nil> false
+	// U+0032: 2 true
+}
+
+func TestCheckIntegerRange(t *testing.T) {
+	p := func(i int) *parser.Parser {
+		p, _ := parser.New([]byte(strconv.Itoa(i)))
+		return p
+	}
+
+	for i := 0; i < 12; i++ {
+		if v, ok := p(i).Check(parser.CheckIntegerRange(12, 12345, false)); ok {
+			t.Error(i, v)
+		}
+	}
+	for i := 12; i <= 12345; i++ {
+		p := p(i)
+		if _, err := p.Expect(parser.CheckIntegerRange(12, 12345, false)); err != nil {
+			t.Error(i, err)
+		}
+		if _, err := p.Expect(parser.EOD); err != nil {
+			t.Error(i, err)
+		}
+	}
+}
 
 func ExampleAnonymousClass_rune() {
 	p, _ := parser.New([]byte("data"))
