@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/di-wu/parser/op"
+	"reflect"
 	"strings"
 )
 
@@ -53,6 +54,11 @@ type ExpectedParseError struct {
 }
 
 func Stringer(i interface{}) string {
+	i = ConvertAliases(i)
+	if reflect.TypeOf(i).Kind() == reflect.Func {
+		return "func"
+	}
+
 	switch v := i.(type) {
 	case rune:
 		return fmt.Sprintf("'%s'", string(v))
