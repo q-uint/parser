@@ -7,6 +7,22 @@ import (
 	"testing"
 )
 
+func ExampleCheckRuneCI() {
+	p, _ := parser.New([]byte("Ee"))
+	fmt.Println(p.Expect(parser.CheckRune('E')))
+	fmt.Println(p.Expect(parser.CheckRuneCI('e')))
+	// Output:
+	// U+0045: E <nil>
+	// U+0065: e <nil>
+}
+
+func ExampleCheckStringCI() {
+	p, _ := parser.New([]byte("Ee"))
+	fmt.Println(p.Expect(parser.CheckStringCI("ee")))
+	// Output:
+	// U+0065: e <nil>
+}
+
 func ExampleCheckInteger() {
 	p, _ := parser.New([]byte("-0001 something else"))
 	fmt.Println(p.Check(parser.CheckInteger(-1, false)))

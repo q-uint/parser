@@ -4,6 +4,7 @@ import (
 	"github.com/di-wu/parser/op"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // AnonymousClass represents an anonymous Class.Check function.
@@ -77,10 +78,20 @@ func CheckIntegerRange(min, max uint, leadingZeros bool) AnonymousClass {
 // CheckRune returns an AnonymousClass that checks whether the current rune of
 // the parser matches the given rune. The same result can be achieved by using
 // p.Expect(r). Where 'p' is a reference to the parser an 'r' a rune value.
-func CheckRune(r rune) AnonymousClass {
-	return func(p *Parser) (*Cursor, bool) {
-		return p.Mark(), p.Current() == r
-	}
+func CheckRune(expected rune) AnonymousClass {
+	return CheckRuneFunc(func(actual rune) bool {
+		return expected == actual
+	})
+}
+
+// CheckRuneCI returns an AnonymousClass that checks whether the current (lower
+// cased) rune of the parser matches the given (lower cased) rune. The given
+// rune does not need to be lower case.
+func CheckRuneCI(expected rune) AnonymousClass {
+	expected = unicode.ToLower(expected)
+	return CheckRuneFunc(func(actual rune) bool {
+		return expected == unicode.ToLower(actual)
+	})
 }
 
 // CheckRuneRange returns an AnonymousClass that checks whether the current rune of
@@ -108,6 +119,24 @@ func CheckString(s string) AnonymousClass {
 		var last *Cursor
 		for _, r := range []rune(s) {
 			if p.Current() != r {
+				return last, false
+			}
+			last = p.Mark()
+			p.Next()
+		}
+		return last, true
+	}
+}
+
+// CheckStringCI returns an AnonymousClass that checks whether the current
+// (lower cased) sequence runes of the parser matches the given (lower cased)
+// string. The given string does not need to be lower case.
+func CheckStringCI(s string) AnonymousClass {
+	s = strings.ToLower(s)
+	return func(p *Parser) (*Cursor, bool) {
+		var last *Cursor
+		for _, r := range []rune(s) {
+			if unicode.ToLower(p.Current()) != r {
 				return last, false
 			}
 			last = p.Mark()
