@@ -5,6 +5,15 @@ import (
 	"github.com/di-wu/parser/op"
 )
 
+// Parse parses the given data based on the parse node.
+func Parse(data []byte, node ParseNode) (*Node, error) {
+	p, err := New(data)
+	if err != nil {
+		return nil, err
+	}
+	return node(p)
+}
+
 // Parser represents a general purpose AST parser.
 type Parser struct {
 	internal *parser.Parser
