@@ -90,6 +90,10 @@ descriptions for all functionality.
 You can find the documentation [here](https://pkg.go.dev/github.com/di-wu/parser). Additional examples can be
 found [here](./examples).
 
+## Acknowledgments
+
+This parser is strongly influenced by the original PEGN parser created by [rwxrob](https://github.com/rwxrob) that used a unique, Go-friendly types-as-operators approach.
+
 ## Contributing
 
 Contributions are welcome. Feel free to create a PR/issue for new features or bug fixes.
