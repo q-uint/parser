@@ -2,7 +2,7 @@ package recursion
 
 import (
 	"fmt"
-	"github.com/di-wu/parser/ast"
+	"github.com/q-uint/parser/ast"
 )
 
 func ExampleFinite() {

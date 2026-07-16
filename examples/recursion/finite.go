@@ -1,8 +1,8 @@
 package recursion
 
 import (
-	"github.com/di-wu/parser/ast"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser/ast"
+	"github.com/q-uint/parser/op"
 )
 
 func Finite(p *ast.Parser) (*ast.Node, error) {

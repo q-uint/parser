@@ -1,9 +1,9 @@
 package precedence
 
 import (
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/ast"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/ast"
+	"github.com/q-uint/parser/op"
 )
 
 func Value(p *ast.Parser) (*ast.Node, error) {

@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser/op"
 	"reflect"
 	"strings"
 )

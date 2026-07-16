@@ -2,7 +2,7 @@ package precedence
 
 import (
 	"fmt"
-	"github.com/di-wu/parser/ast"
+	"github.com/q-uint/parser/ast"
 )
 
 func Example() {

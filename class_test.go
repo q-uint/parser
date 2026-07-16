@@ -2,7 +2,7 @@ package parser_test
 
 import (
 	"fmt"
-	"github.com/di-wu/parser"
+	"github.com/q-uint/parser"
 	"strconv"
 	"testing"
 )

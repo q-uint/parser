@@ -2,9 +2,9 @@ package elf_test
 
 import (
 	"fmt"
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/ast"
-	"github.com/di-wu/parser/examples/elf"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/ast"
+	"github.com/q-uint/parser/examples/elf"
 )
 
 func ExampleParse_invalid() {

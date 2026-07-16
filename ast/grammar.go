@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/op"
 )
 
 func node(p *Parser) (*Node, error) {
@@ -115,7 +115,7 @@ func integer(p *Parser) (*Node, error) {
 const (
 	Unknown = iota
 
-	// PEGN-AST (github.com/di-wu/parser)
+	// PEGN-AST (github.com/q-uint/parser)
 	NodeType     // 001
 	LiteralType  // 002
 	ChildrenType // 003
@@ -125,7 +125,7 @@ const (
 var NodeTypes = []string{
 	"UNKNOWN",
 
-	// PEGN-AST (github.com/di-wu/parser)
+	// PEGN-AST (github.com/q-uint/parser)
 	"Node",
 	"Literal",
 	"Children",

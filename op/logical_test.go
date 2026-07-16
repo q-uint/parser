@@ -2,8 +2,8 @@ package op_test
 
 import (
 	"fmt"
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/op"
 )
 
 func ExampleNot() {

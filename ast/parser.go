@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/op"
 )
 
 // Parse parses the given data based on the parse node.

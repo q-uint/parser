@@ -1,3 +1,3 @@
-module github.com/di-wu/parser
+module github.com/q-uint/parser
 
 go 1.16

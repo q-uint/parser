@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser/op"
 	"strconv"
 	"strings"
 	"unicode"

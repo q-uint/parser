@@ -2,8 +2,8 @@ package calc_ast_test
 
 import (
 	"fmt"
-	"github.com/di-wu/parser/ast"
-	calc "github.com/di-wu/parser/examples/calculator/ast"
+	"github.com/q-uint/parser/ast"
+	calc "github.com/q-uint/parser/examples/calculator/ast"
 )
 
 func ExampleParse() {

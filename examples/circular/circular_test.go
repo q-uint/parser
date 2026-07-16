@@ -2,9 +2,9 @@ package circular_test
 
 import (
 	"fmt"
-	"github.com/di-wu/parser/ast"
-	"github.com/di-wu/parser/examples/circular"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser/ast"
+	"github.com/q-uint/parser/examples/circular"
+	"github.com/q-uint/parser/op"
 )
 
 func ExampleCircular() {
